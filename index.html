@@ -232,11 +232,21 @@
         body:not(.role-admin) [onclick*="knowledge-import-input"],
         body:not(.role-admin) #cd-dryad-btn,
         body:not(.role-admin) .lib-act-btn.danger,
-        body:not(.role-admin) [data-del-photo] { display: none !important; }
+        body:not(.role-admin) [data-del-photo],
+        /* 3.0.2: trang tính gốc + thư mục Google Drive: CHỈ Quản trị (máy chủ cũng không gửi link cho vai trò khác) */
+        body:not(.role-admin) #open-sheet-link,
+        body:not(.role-admin) #task-open-sheet-link,
+        body:not(.role-admin) #risk-open-sheet-link,
+        body:not(.role-admin) #harvest-open-sheet-link,
+        body:not(.role-admin) #knowledge-open-sheet-link,
+        body:not(.role-admin) #lib-ho-folder-link,
+        body:not(.role-admin) #lib-ho-subfolder-link,
+        body:not(.role-admin) #lib-knowledge-folder-link { display: none !important; }
+        /* 3.0.2: Xuất file Excel / CSV: từ Cán bộ kỹ thuật (Xã viên không xuất) */
+        body:not(.role-engineer):not(.role-admin) [onclick^="exportRows("] { display: none !important; }
         /* Từ CÁN BỘ KỸ THUẬT: cập nhật Task, đo Cd, đồng bộ thời tiết / Cd, ghi Risk / thu hoạch, tải ảnh, Zalo */
         body:not(.role-engineer):not(.role-admin) [data-action="edit"],
         body:not(.role-engineer):not(.role-admin) [data-action="done"],
-        body:not(.role-engineer):not(.role-admin) [data-action="photo"],
         body:not(.role-engineer):not(.role-admin) [onclick="openCreateTaskForm()"],
         body:not(.role-engineer):not(.role-admin) [onclick="openCreateRiskForm()"],
         body:not(.role-engineer):not(.role-admin) [onclick="openCreateHarvestForm()"],
@@ -998,6 +1008,7 @@
                         <input type="file" id="lib-knowledge-file-input" class="hidden" multiple onchange="uploadLibraryFile(event, 'knowledge')">
                         <button id="lib-knowledge-upload-btn" onclick="document.getElementById('lib-knowledge-file-input').click()" class="lib-upload-btn flex items-center gap-2 font-black text-xs uppercase px-6 py-3.5 rounded-full transition-colors">📤 Tải tài liệu lên</button>
                         <span id="lib-knowledge-upload-status" class="text-xs text-slate-400"></span>
+                        <button onclick="openPhotoPicker_()" title="Chụp / tải ảnh xác nhận công việc hoặc cảnh báo sâu bệnh cho đúng công việc của vùng trồng" class="flex items-center gap-2 font-black text-[10px] uppercase px-5 py-3 rounded-full bg-sky-600 hover:bg-sky-700 text-white">📷 Ảnh thực địa theo công việc</button>
                         <a id="lib-knowledge-folder-link" href="#" target="_blank" rel="noopener" class="hidden ml-auto text-[10px] font-black uppercase text-emerald-700 hover:underline">📂 Mở thư mục trên Google Drive</a>
                     </div>
                     <p class="text-[11px] text-slate-500 pb-3 leading-relaxed">AI Analyst tự đọc các tài liệu ở đây khi trả lời. Tệp lớn hơn 20MB: kéo thả thẳng vào thư mục Drive (nút bên phải) — máy chủ tự đọc trong vòng 1 giờ. Không đưa danh sách xã viên, số điện thoại vào kho chung.</p>
@@ -1377,27 +1388,31 @@
                 <button data-atab="users" onclick="switchAdminTab('users')" class="admin-tab-btn activity-tab-btn px-5 py-2.5 rounded-full text-[11px] font-black uppercase">👥 Tài khoản</button>
                 <button data-atab="suggest" onclick="switchAdminTab('suggest')" class="admin-tab-btn activity-tab-btn px-5 py-2.5 rounded-full text-[11px] font-black uppercase">📝 Đề xuất sửa Data</button>
                 <button data-atab="audit" onclick="switchAdminTab('audit')" class="admin-tab-btn activity-tab-btn px-5 py-2.5 rounded-full text-[11px] font-black uppercase">📜 Nhật ký truy cập</button>
+                <button data-atab="security" onclick="switchAdminTab('security')" class="admin-tab-btn activity-tab-btn px-5 py-2.5 rounded-full text-[11px] font-black uppercase">🔒 Bảo mật dữ liệu</button>
             </div>
             <div class="flex-1 overflow-auto custom-scrollbar px-8 py-4">
                 <div id="admin-panel-users" class="space-y-4">
                     <div id="admin-users-warn" class="hidden bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl px-4 py-3 text-xs space-y-1"></div>
                     <div class="flex gap-2 flex-wrap">
                         <button onclick="resetAdminUserForm(); document.getElementById('au-username').focus()" class="px-4 py-2 rounded-full bg-emerald-600 text-white text-[11px] font-black uppercase">➕ Thêm tài khoản</button>
-                        <button onclick="presetHtxAccount()" class="px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-black uppercase">🧑‍🌾 Đặt mật khẩu HTX</button>
+                        <button onclick="createPucAccounts()" class="px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-black uppercase">🧑‍🌾 Tạo tài khoản cho các vùng trồng</button>
                         <button onclick="loadAdminUsers()" class="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-[11px] font-black uppercase">⟳ Tải lại</button>
                         <button onclick="revokeAllSessions()" class="ml-auto px-4 py-2 rounded-full bg-red-50 border border-red-200 text-red-700 text-[11px] font-black uppercase">⏏ Đăng xuất mọi thiết bị</button>
                     </div>
+                    <div id="admin-puc-result" class="hidden rounded-2xl border-2 border-emerald-300 bg-emerald-50 p-4 space-y-3"></div>
                     <div id="admin-users" class="rounded-2xl border border-slate-200 overflow-x-auto"></div>
                     <form id="au-form" onsubmit="saveAdminUser(event)" class="rounded-2xl border border-slate-200 bg-slate-50 p-4 grid grid-cols-2 gap-3">
                         <p id="au-title" class="col-span-2 font-black text-sm text-slate-800">Thêm tài khoản mới</p>
                         <div><label class="form-label" for="au-username">Tên đăng nhập</label><input id="au-username" class="form-input" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="vd: kysu.lan" required pattern="[a-z0-9._\-]{3,32}" title="3–32 ký tự: chữ thường không dấu, số, . _ -"></div>
                         <div><label class="form-label" for="au-name">Họ tên</label><input id="au-name" class="form-input" autocomplete="off" placeholder="vd: Nguyễn Thị Lan"></div>
                         <div><label class="form-label" for="au-role">Vai trò</label>
-                            <select id="au-role" class="form-input">
-                                <option value="GUEST">🧑‍🌾 Nông dân / Khách — chỉ xem</option>
+                            <select id="au-role" class="form-input" onchange="toggleAdminPucField_()">
+                                <option value="GUEST">🧑‍🌾 Xã viên — xem & chụp ảnh đúng 1 vùng trồng</option>
                                 <option value="ENGINEER">🛠️ Cán bộ kỹ thuật — cập nhật Task, đo Cd, thời tiết</option>
                                 <option value="ADMIN">🛡️ Quản trị — toàn quyền</option>
                             </select></div>
+                        <div id="au-puc-wrap" class="hidden"><label class="form-label" for="au-puc">Mã vùng trồng (Xã viên)</label>
+                            <select id="au-puc" class="form-input"></select></div>
                         <div><label class="form-label" id="au-password-label" for="au-password">Mật khẩu ban đầu (≥ 8 ký tự)</label>
                             <div class="flex gap-2"><input id="au-password" type="password" class="form-input" autocomplete="new-password" minlength="8">
                                 <button type="button" onclick="genAdminPassword()" title="Tạo mật khẩu ngẫu nhiên (đã chép vào bộ nhớ tạm)" class="shrink-0 px-3 rounded-xl bg-white border border-slate-200 text-xs font-bold">🎲</button></div></div>
@@ -1418,6 +1433,15 @@
                         <button onclick="loadAdminSuggestions()" class="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-[11px] font-black uppercase">⟳</button>
                     </div>
                     <div id="admin-suggest" class="rounded-2xl border border-slate-200 overflow-x-auto"></div>
+                </div>
+                <div id="admin-panel-security" class="hidden space-y-3">
+                    <p class="text-xs text-slate-600 leading-relaxed">Web chỉ đọc / ghi qua Apps Script có kiểm tra phiên đăng nhập. Trang tính gốc và thư mục kho Drive nên để <b>Riêng tư</b>:
+                        chỉ người được mời đích danh mở được (bấm "Khoá" không xoá người đã được mời). Ảnh thực địa từng tệp vẫn chia sẻ bằng link để hiện được trên web.</p>
+                    <div class="flex gap-2 flex-wrap">
+                        <button onclick="loadSecurityCheck()" class="px-4 py-2 rounded-full bg-slate-100 text-slate-700 text-[11px] font-black uppercase">⟳ Kiểm tra</button>
+                        <button onclick="lockSharing()" class="px-4 py-2 rounded-full bg-red-600 text-white text-[11px] font-black uppercase">🔒 Khoá chia sẻ link (trang tính + thư mục kho)</button>
+                    </div>
+                    <div id="admin-security" class="rounded-2xl border border-slate-200 p-4 text-xs"></div>
                 </div>
                 <div id="admin-panel-audit" class="hidden space-y-3">
                     <div class="flex gap-2 items-center"><span class="text-xs text-slate-600">300 thao tác gần nhất (đăng nhập, sai mật khẩu, ghi / xóa dữ liệu, sửa tài khoản).</span>
@@ -1440,13 +1464,13 @@
             </div>
             <p id="login-msg" class="hidden mt-4 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2" role="status"></p>
             <div class="mt-4 grid grid-cols-2 gap-1 p-1 bg-slate-100 rounded-full" role="tablist">
-                <button type="button" data-mode="guest" onclick="setLoginMode('guest')" class="login-mode-btn active" role="tab">🧑‍🌾 Nông dân / Khách</button>
+                <button type="button" data-mode="guest" onclick="setLoginMode('guest')" class="login-mode-btn active" role="tab">🧑‍🌾 Xã viên (Mã vùng)</button>
                 <button type="button" data-mode="staff" onclick="setLoginMode('staff')" class="login-mode-btn" role="tab">🛠️ Cán bộ / Quản trị</button>
             </div>
             <form id="login-form" onsubmit="submitLogin(event)" class="mt-4 space-y-3" autocomplete="on">
-                <div id="login-user-wrap" class="hidden"><label class="form-label" for="login-user">Tên đăng nhập</label>
+                <div id="login-user-wrap"><label class="form-label" id="login-user-label" for="login-user">Mã vùng trồng</label>
                     <input id="login-user" name="username" class="form-input !text-base" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="vd: kysu.lan"></div>
-                <div><label class="form-label" id="login-pass-label" for="login-pass">Mật khẩu chung của HTX</label>
+                <div><label class="form-label" id="login-pass-label" for="login-pass">Mật khẩu của vùng</label>
                     <div class="relative"><input id="login-pass" name="password" type="password" class="form-input !text-base pr-12" autocomplete="current-password">
                         <button type="button" onclick="toggleLoginPassword()" class="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-1 text-slate-400" aria-label="Hiện / ẩn mật khẩu">👁</button></div></div>
                 <label class="flex items-center gap-2 text-[11px] font-bold text-slate-600"><input id="login-remember" type="checkbox" checked> Ghi nhớ trên máy này (tự đăng xuất sau 8 tiếng)</label>
@@ -1526,7 +1550,8 @@
         // ==========================================================================
         const CONFIG = {
             // Trang tính nguồn: PUC_SENVIET — tab "Data" là chuẩn duy nhất.
-            SPREADSHEET_URL: "https://docs.google.com/spreadsheets/d/1RwvGqssktUfKfEyT4aGw5WluCotycc8XfDxip4Q3wC0/edit",
+            // 3.0.2: link trang tính gốc KHÔNG để trong mã nguồn (trang web công khai trên GitHub) — máy chủ chỉ gửi
+            // kèm phiên đăng nhập của Quản trị (authSession.sheetUrl). Xem sheetUrl_().
 
             // Apps Script Web App (.../exec): vừa ĐỌC (GET trả JSON) vừa GHI (POST thêm/sửa/xóa).
             // Nhờ đọc qua API này, trang tính KHÔNG cần "Xuất bản lên web" -> dữ liệu xã viên
@@ -1538,7 +1563,7 @@
             FIELDS: {},
 
             // Phiên bản giao diện — so với "version" máy chủ trả về để cảnh báo khi link /exec còn chạy bản cũ.
-            APP_VERSION: "3.0.1"
+            APP_VERSION: "3.0.2"
         };
 
         // Tên cột thật trên tab "Data" sẽ được nạp vào đây sau khi gọi API lần đầu.
@@ -1789,8 +1814,13 @@
             updateSyncBadge();
             updateGeminiStatusDot();
             const sheetLink = document.getElementById('open-sheet-link');
-            if (sheetLink) sheetLink.href = CONFIG.SPREADSHEET_URL;
+            if (sheetLink) sheetLink.href = sheetUrl_();
             applyRoleUi_();
+            if (authSession && authSession.role === 'ADMIN' && !authSession.sheetUrl && getAccessCode()) {
+                apiFetchOnce_({ entity: 'auth', action: 'auth_me', token: getAccessCode() }).then(j => {
+                    if (j && j.success && j.session) { saveSession_({ ...authSession, ...j.session }, !!authSession.remember); applyRoleUi_(); }
+                }).catch(() => { });
+            }
             scheduleAutoLogout_();
             // Điện thoại: thu gọn AI Analyst thành nút tròn để không che bản đồ (bấm để mở)
             if (window.matchMedia('(max-width: 768px)').matches) setAIState('collapsed');
@@ -1814,7 +1844,7 @@
         const SESSION_STORAGE_ = 'smartagri_session_v3';
         const ROLE_LEVEL_UI_ = { GUEST: 1, ENGINEER: 2, ADMIN: 3 };
         const ROLE_UI_ = {
-            GUEST: { icon: '🧑‍🌾', label: 'Nông dân / Khách', cls: 'role-guest' },
+            GUEST: { icon: '🧑‍🌾', label: 'Xã viên', cls: 'role-guest' },
             ENGINEER: { icon: '🛠️', label: 'Cán bộ kỹ thuật', cls: 'role-engineer' },
             ADMIN: { icon: '🛡️', label: 'Quản trị', cls: 'role-admin' }
         };
@@ -1852,6 +1882,8 @@
         }
         function setAccessCode(v) { if (!v) saveSession_(null); }
         function currentRole_() { return getAccessCode() ? authSession.role : ''; }
+        function sheetUrl_() { return (authSession && authSession.role === 'ADMIN' && authSession.sheetUrl) || '#'; }
+        const SHEET_LINK_IDS_ = ['open-sheet-link', 'task-open-sheet-link', 'risk-open-sheet-link', 'harvest-open-sheet-link', 'knowledge-open-sheet-link'];
         function hasRole_(need) { return (ROLE_LEVEL_UI_[currentRole_()] || 0) >= (ROLE_LEVEL_UI_[need] || 99); }
         function isAuthError_(code) { return ['UNAUTHORIZED', 'NOT_CONFIGURED', 'SESSION_EXPIRED', 'SESSION_REVOKED'].includes(code); }
         function requireAccessCode_(msg) { openLoginModal(msg); }
@@ -1872,8 +1904,8 @@
 
         // Bản sao ma trận quyền của máy chủ (requiredRole_ trong Phan_Quyen.gs) — chỉ để báo sớm, máy chủ vẫn kiểm tra lại.
         const ACTION_ROLES_UI_ = {
-            generate: 'GUEST', weather_get: 'GUEST', weather_analyze: 'GUEST', listKnowledgeDocs: 'GUEST', getKnowledgeText: 'GUEST',
-            listFolder: 'ENGINEER', uploadMedia: 'ENGINEER', uploadKnowledgeDoc: 'ENGINEER', uploadTaskPhoto: 'ENGINEER',
+            generate: 'GUEST', weather_get: 'GUEST', weather_analyze: 'GUEST', listKnowledgeDocs: 'GUEST', getKnowledgeText: 'GUEST', uploadTaskPhoto: 'GUEST',
+            listFolder: 'ENGINEER', uploadMedia: 'ENGINEER', uploadKnowledgeDoc: 'ENGINEER',
             upload_zalo_photo: 'ENGINEER', map_zalo: 'ENGINEER', unmap_zalo: 'ENGINEER', analyze_zalo_ocr: 'ENGINEER',
             weather_sync_risk: 'ENGINEER', risk_history_report: 'ENGINEER', cadmium_sync_risk: 'ENGINEER',
             deleteHouseholdFile: 'ADMIN', deleteKnowledgeDoc: 'ADMIN', deleteTaskPhoto: 'ADMIN',
@@ -1921,11 +1953,13 @@
             if (who) who.innerHTML = role
                 ? `<p class="font-black text-slate-800 truncate">${esc(authSession.name || authSession.user)}</p>
                    <p class="text-[11px] text-slate-500">${ROLE_UI_[role].icon} ${ROLE_UI_[role].label} · <span class="font-mono">${esc(authSession.user)}</span></p>
+                   ${role === 'GUEST' && authSession.puc ? '<p class="text-[11px] text-emerald-700 font-bold mt-1">🌳 Vùng trồng: ' + esc(authSession.puc) + ' — chỉ xem dữ liệu vùng này</p>' : ''}
                    <p class="text-[10px] text-slate-400 mt-1">Tự đăng xuất lúc ${new Date(authSession.exp).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}</p>
                    ${authSession.boot ? '<p class="text-[10px] font-bold text-amber-700 mt-1">⚠️ Đang dùng mã khởi tạo — hãy tạo tài khoản Quản trị chính thức.</p>' : ''}`
                 : '<p class="text-xs text-slate-500">Chưa đăng nhập</p>';
             const pwBtn = document.getElementById('auth-menu-pw');
-            if (pwBtn) pwBtn.classList.toggle('hidden', !role || authSession.user === 'htx' || !!authSession.boot);
+            if (pwBtn) pwBtn.classList.toggle('hidden', !role || role === 'GUEST' || !!authSession.boot); // mật khẩu vùng: chỉ Quản trị đổi
+            SHEET_LINK_IDS_.forEach(id => { const a = document.getElementById(id); if (a) a.href = sheetUrl_(); });
             const g = document.getElementById('guide-session');
             if (g) g.innerHTML = role
                 ? `Đang đăng nhập: <b>${esc(authSession.name || authSession.user)}</b> — ${ROLE_UI_[role].icon} ${ROLE_UI_[role].label}. Phiên tự hết hạn lúc ${new Date(authSession.exp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}.`
@@ -1951,14 +1985,15 @@
         function setLoginMode(mode) {
             loginMode = mode;
             document.querySelectorAll('.login-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-            document.getElementById('login-user-wrap').classList.toggle('hidden', mode === 'guest');
-            document.getElementById('login-pass-label').textContent = mode === 'guest' ? 'Mật khẩu chung của HTX' : 'Mật khẩu';
-            document.getElementById('login-pass').placeholder = mode === 'guest' ? 'Mật khẩu HTX phát cho xã viên' : 'Mật khẩu cá nhân';
+            document.getElementById('login-user-label').textContent = mode === 'guest' ? 'Mã vùng trồng' : 'Tên đăng nhập';
+            document.getElementById('login-user').placeholder = mode === 'guest' ? 'vd: SVDLSR101' : 'vd: kysu.lan';
+            document.getElementById('login-pass-label').textContent = mode === 'guest' ? 'Mật khẩu của vùng' : 'Mật khẩu';
+            document.getElementById('login-pass').placeholder = mode === 'guest' ? 'Mật khẩu HTX phát cho vùng của bạn' : 'Mật khẩu cá nhân';
             document.getElementById('login-hint').innerHTML = mode === 'guest'
-                ? '🧑‍🌾 Xem bản đồ vùng trồng, lịch công việc, cảnh báo Cadimi & thời tiết. Không xem được SĐT cá nhân, không sửa/xoá dữ liệu.'
+                ? '🧑‍🌾 Chỉ xem dữ liệu <b>vùng trồng của bạn</b>: bản đồ, lịch 21 công việc, cảnh báo sâu bệnh, Cadimi, thời tiết; chụp / tải ảnh thực địa cho công việc của vùng. Không xem được SĐT cá nhân, không sửa/xoá dữ liệu.'
                 : '🛠️ <b>Cán bộ kỹ thuật</b>: cập nhật tiến độ Task, nhập mẫu đo Cadimi, đồng bộ thời tiết. 🛡️ <b>Quản trị</b>: toàn quyền, duyệt đề xuất, quản lý tài khoản.';
             document.getElementById('login-error').textContent = '';
-            setTimeout(() => document.getElementById(mode === 'guest' ? 'login-pass' : 'login-user').focus(), 30);
+            setTimeout(() => document.getElementById(document.getElementById('login-user').value ? 'login-pass' : 'login-user').focus(), 30);
         }
         function openLoginModal(msg) {
             const m = document.getElementById('login-modal');
@@ -1970,7 +2005,7 @@
             document.getElementById('login-pass').value = '';
             m.classList.add('open');
             setLoginMode(authSession && authSession.role !== 'GUEST' ? 'staff' : loginMode);
-            if (authSession && authSession.role !== 'GUEST') document.getElementById('login-user').value = authSession.user;
+            if (authSession) document.getElementById('login-user').value = authSession.role === 'GUEST' ? (authSession.puc || authSession.user) : authSession.user;
         }
         function closeLoginModal() {
             if (!getAccessCode()) return; // chưa đăng nhập thì không đóng được (không có dữ liệu để xem)
@@ -1983,10 +2018,10 @@
         async function submitLogin(ev) {
             if (ev) ev.preventDefault();
             const btn = document.getElementById('login-submit'), errEl = document.getElementById('login-error');
-            const username = loginMode === 'guest' ? 'htx' : document.getElementById('login-user').value.trim().toLowerCase();
+            const username = document.getElementById('login-user').value.trim(); // Xã viên: máy chủ tự rút gọn Mã vùng (vd "SVDLSR 101'S ORCHARD" -> svdlsr101)
             const password = document.getElementById('login-pass').value;
             const remember = document.getElementById('login-remember').checked;
-            if (loginMode === 'staff' && !username) { errEl.textContent = 'Hãy nhập tên đăng nhập.'; return; }
+            if (!username) { errEl.textContent = loginMode === 'guest' ? 'Hãy nhập Mã vùng trồng.' : 'Hãy nhập tên đăng nhập.'; return; }
             if (!password) { errEl.textContent = 'Hãy nhập mật khẩu.'; return; }
             if (!CONFIG.APPS_SCRIPT_API_URL) { errEl.textContent = 'Chưa cấu hình APPS_SCRIPT_API_URL.'; return; }
             btn.disabled = true; btn.textContent = 'Đang kiểm tra...'; errEl.textContent = '';
@@ -2084,7 +2119,8 @@
         function switchAdminTab(tab) {
             adminTab = tab;
             document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.atab === tab));
-            ['users', 'suggest', 'audit'].forEach(t => document.getElementById('admin-panel-' + t).classList.toggle('hidden', t !== tab));
+            ['users', 'suggest', 'audit', 'security'].forEach(t => document.getElementById('admin-panel-' + t).classList.toggle('hidden', t !== tab));
+            if (tab === 'security') loadSecurityCheck();
             if (tab === 'users') loadAdminUsers();
             if (tab === 'suggest') loadAdminSuggestions();
             if (tab === 'audit') loadAdminAudit();
@@ -2101,11 +2137,16 @@
             try { json = await authAdminCall_('auth_list_users'); } catch (e) { box.innerHTML = `<p class="text-sm text-red-600 p-4">Lỗi kết nối: ${esc(e.message)}</p>`; return; }
             if (!json.success) { box.innerHTML = `<p class="text-sm text-red-600 p-4">${esc(json.error)}</p>`; return; }
             adminUsers = json.users || [];
-            const htx = adminUsers.find(u => u.username === 'htx');
+            adminPucs = json.pucs || [];
+            fillAdminPucSelect_();
+            const htx = adminUsers.find(u => u.username === 'htx' && u.active && !u.puc);
+            const covered = new Set(adminUsers.filter(u => u.role === 'GUEST' && u.puc).map(u => u.puc));
+            const missingPucs = adminPucs.filter(p => !covered.has(p.key));
             const admins = adminUsers.filter(u => u.role === 'ADMIN' && u.active && u.hasPassword).length;
             const warn = [];
             if (!admins) warn.push('⚠️ Chưa có tài khoản <b>Quản trị</b> chính thức — bạn đang dùng mã khởi tạo. Hãy tạo ngay 1 tài khoản Quản trị (sau đó mã ACCESS_CODE cũ hết tác dụng).');
-            if (!htx) warn.push('🧑‍🌾 Chưa có mật khẩu chung HTX — bấm <b>"Đặt mật khẩu HTX"</b> để xã viên đăng nhập xem bản đồ.');
+            if (htx) warn.push('⛔ Tài khoản chung <b>htx</b> còn mở nhưng đã ngừng dùng từ 3.0.2 (xem được mọi vùng). Bấm <b>"Tạo tài khoản cho các vùng trồng"</b> — hệ thống tự khoá htx.');
+            if (missingPucs.length) warn.push('🧑‍🌾 ' + missingPucs.length + '/' + adminPucs.length + ' vùng trồng chưa có tài khoản Xã viên — bấm <b>"Tạo tài khoản cho các vùng trồng"</b>.');
             if (admins === 1) warn.push('💡 Nên có ít nhất 2 Quản trị để không bị khóa ngoài khi 1 người quên mật khẩu.');
             document.getElementById('admin-users-warn').innerHTML = warn.map(w => `<p>${w}</p>`).join('');
             document.getElementById('admin-users-warn').classList.toggle('hidden', !warn.length);
@@ -2114,7 +2155,7 @@
                 <thead class="text-[10px] uppercase text-slate-400"><tr><th class="p-2">Tài khoản</th><th class="p-2">Vai trò</th><th class="p-2">Trạng thái</th><th class="p-2 hide-sm">Đăng nhập cuối</th><th class="p-2 text-right">Thao tác</th></tr></thead>
                 <tbody>${adminUsers.map((u, i) => `<tr class="border-t border-slate-100">
                     <td class="p-2"><p class="font-bold text-slate-800">${esc(u.name || u.username)}${u.isHtx ? ' <span class="text-[10px] text-emerald-700">(mật khẩu chung HTX)</span>' : ''}</p><p class="font-mono text-[11px] text-slate-500">${esc(u.username)}</p></td>
-                    <td class="p-2">${roleBadge(u.role)}</td>
+                    <td class="p-2">${roleBadge(u.role)}${u.role === 'GUEST' ? '<br><span class="text-[10px] font-bold ' + (u.puc ? 'text-emerald-700' : 'text-red-600') + '">' + (u.puc ? '🌳 ' + esc(u.puc) : 'Chưa gắn vùng') + '</span>' : ''}</td>
                     <td class="p-2">${u.active ? '<span class="text-emerald-700 font-bold">● Hoạt động</span>' : '<span class="text-red-600 font-bold">● Khóa</span>'}${u.tempLocked ? '<br><span class="text-amber-700 text-[10px] font-bold">Khóa tạm do nhập sai</span>' : ''}</td>
                     <td class="p-2 hide-sm text-slate-500">${esc(u.lastLogin || '—')}</td>
                     <td class="p-2 text-right whitespace-nowrap">
@@ -2130,19 +2171,79 @@
             document.getElementById('au-username').readOnly = !!preset.username;
             document.getElementById('au-name').value = preset.name || '';
             document.getElementById('au-role').value = preset.role || 'ENGINEER';
-            document.getElementById('au-role').disabled = preset.username === 'htx';
+            document.getElementById('au-puc').value = preset.puc || '';
+            toggleAdminPucField_();
             document.getElementById('au-password').value = '';
             document.getElementById('au-active').checked = preset.active !== false;
             document.getElementById('au-title').textContent = preset.username ? 'Sửa tài khoản: ' + preset.username : 'Thêm tài khoản mới';
             document.getElementById('au-password-label').textContent = preset.username ? 'Mật khẩu mới (để trống = giữ nguyên)' : 'Mật khẩu ban đầu (≥ 8 ký tự)';
             document.getElementById('au-error').textContent = '';
         }
-        function presetHtxAccount() {
-            const htx = adminUsers.find(u => u.username === 'htx');
-            resetAdminUserForm(htx || { username: '', name: 'Xã viên HTX (mật khẩu chung)', role: 'GUEST' });
-            if (!htx) { document.getElementById('au-username').value = 'htx'; document.getElementById('au-role').value = 'GUEST'; document.getElementById('au-role').disabled = true; }
-            document.getElementById('au-title').textContent = 'Mật khẩu chung HTX (Nông dân / Khách)';
-            document.getElementById('au-password').focus();
+        // ---- 3.0.2: tài khoản Xã viên theo Mã vùng trồng
+        let adminPucs = [];
+        function fillAdminPucSelect_() {
+            const sel = document.getElementById('au-puc');
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">— Chọn vùng —</option>' + adminPucs.map(p =>
+                `<option value="${esc(p.key)}">${esc(p.key)} · ${p.households} hộ${p.tinh ? ' · ' + esc(p.tinh) : ''}${p.names.length > 1 ? ' (gộp ' + p.names.length + ' cách viết)' : ''}</option>`).join('');
+            sel.value = cur;
+        }
+        function toggleAdminPucField_() {
+            document.getElementById('au-puc-wrap').classList.toggle('hidden', document.getElementById('au-role').value !== 'GUEST');
+        }
+        let lastPucAccounts_ = [];
+        async function createPucAccounts() {
+            if (!confirm('Tạo 1 tài khoản Xã viên cho MỖI vùng trồng chưa có tài khoản (mật khẩu ngẫu nhiên), và KHOÁ tài khoản chung "htx"?\n\nMật khẩu chỉ hiện 1 lần — hãy tải / in danh sách ngay.')) return;
+            const box = document.getElementById('admin-puc-result');
+            box.classList.remove('hidden');
+            box.innerHTML = '<p class="text-sm text-slate-500">⏳ Đang tạo tài khoản...</p>';
+            const json = await authAdminCall_('auth_create_puc_accounts');
+            if (!json.success) { box.innerHTML = '<p class="text-sm text-red-600">' + esc(json.error || 'Không tạo được') + '</p>'; return; }
+            lastPucAccounts_ = json.created || [];
+            box.innerHTML = `<p class="font-black text-sm text-emerald-900">✅ Đã tạo ${lastPucAccounts_.length} tài khoản vùng${json.existing.length ? ' · ' + json.existing.length + ' vùng đã có tài khoản (giữ nguyên mật khẩu cũ)' : ''}${json.htxLocked ? ' · đã khoá tài khoản chung htx' : ''}.</p>
+                ${lastPucAccounts_.length ? `<p class="text-xs font-bold text-red-700">⚠️ Mật khẩu chỉ hiện LẦN NÀY (máy chủ chỉ lưu mã băm). Tải hoặc in danh sách rồi phát riêng cho từng vùng.</p>
+                <div class="flex gap-2 flex-wrap"><button onclick="downloadPucAccounts_()" class="px-4 py-2 rounded-full bg-emerald-700 text-white text-[11px] font-black uppercase">⬇️ Tải danh sách (CSV)</button>
+                    <button onclick="printPucAccounts_()" class="px-4 py-2 rounded-full bg-white border border-emerald-300 text-emerald-800 text-[11px] font-black uppercase">🖨️ In phiếu phát cho vùng</button>
+                    <button onclick="document.getElementById('admin-puc-result').classList.add('hidden'); lastPucAccounts_ = [];" class="px-4 py-2 rounded-full bg-white border border-slate-200 text-[11px] font-black uppercase">Ẩn mật khẩu</button></div>
+                <div class="overflow-x-auto"><table class="w-full text-left text-xs bg-white rounded-xl"><thead class="text-[10px] uppercase text-slate-400"><tr><th class="p-2">Mã vùng (tên đăng nhập)</th><th class="p-2">Mật khẩu</th><th class="p-2">Số hộ</th><th class="p-2">Tên vùng trên Sheet</th></tr></thead>
+                <tbody>${lastPucAccounts_.map(x => `<tr class="border-t border-slate-100"><td class="p-2 font-mono font-bold">${esc(x.username)}</td><td class="p-2 font-mono">${esc(x.password)}</td><td class="p-2">${x.households}</td><td class="p-2 text-slate-500">${esc(x.names.join(' | '))}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
+            loadAdminUsers();
+        }
+        function downloadPucAccounts_() {
+            const q = v => '"' + String(v === undefined || v === null ? '' : v).replace(/"/g, '""') + '"';
+            const csv = '\ufeff' + [['Ma_vung_dang_nhap', 'Mat_khau', 'So_ho', 'Tinh', 'Ten_vung_tren_Sheet']].concat(
+                lastPucAccounts_.map(x => [x.username, x.password, x.households, x.tinh, x.names.join(' | ')])).map(r => r.map(q).join(',')).join('\r\n');
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+            a.download = 'tai_khoan_xa_vien_theo_vung.csv';
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        }
+        function printPucAccounts_() {
+            const w = window.open('', '_blank');
+            if (!w) { showToast('Trình duyệt chặn cửa sổ in — cho phép popup rồi thử lại', 'error'); return; }
+            const url = location.origin + location.pathname;
+            w.document.write('<!doctype html><meta charset="utf-8"><title>Phiếu tài khoản xã viên</title><style>body{font-family:sans-serif}.p{border:1px dashed #999;padding:12px 16px;margin:10px 0;page-break-inside:avoid}b{font-family:monospace;font-size:18px}</style>' +
+                lastPucAccounts_.map(x => '<div class="p"><p>🌱 <b style="font-family:sans-serif;font-size:14px">SmartAgri — HTX Sen Việt</b> · ' + esc(x.names.join(' / ')) + ' (' + x.households + ' hộ)</p><p>Địa chỉ: ' + esc(url) + '</p><p>Mã vùng trồng: <b>' + esc(x.username.toUpperCase()) + '</b> &nbsp; Mật khẩu: <b>' + esc(x.password) + '</b></p><p style="font-size:12px;color:#555">Chỉ phát cho xã viên của vùng này. Mất phiếu / nghi lộ: báo Quản trị HTX đặt lại mật khẩu.</p></div>').join(''));
+            w.document.close();
+            w.focus();
+            w.print();
+        }
+        async function loadSecurityCheck(prefetched) {
+            const box = document.getElementById('admin-security');
+            box.innerHTML = '<p class="text-slate-400">⏳ Đang kiểm tra...</p>';
+            const json = prefetched || await authAdminCall_('auth_security_check');
+            if (!json.success) { box.innerHTML = '<p class="text-red-600">' + esc(json.error || 'Lỗi') + '</p>'; return; }
+            const row = (label, it, err) => it ? `<div class="py-2 border-b border-slate-100">
+                <p class="font-black text-slate-800">${label}: ${it.isPrivate ? '<span class="text-emerald-700">🔒 Riêng tư</span>' : '<span class="text-red-600">⚠️ ' + esc(it.access) + ' (' + esc(it.permission) + ') — ai có link đều mở được</span>'}</p>
+                <p class="text-slate-500">${esc(it.name)} · Người được mời sửa: ${esc((it.editors || []).join(', ') || '—')} · Được mời xem: ${esc((it.viewers || []).join(', ') || '—')}</p></div>`
+                : `<p class="py-2 text-red-600">${label}: ${esc(err || 'không đọc được')}</p>`;
+            box.innerHTML = row('📊 Trang tính gốc PUC_SENVIET', json.sheet, json.sheetError) + row('📂 Thư mục kho Drive', json.driveRoot, json.driveRootError) +
+                `<p class="pt-2 text-slate-500">${esc(json.note || '')}</p>` + (json.changed ? `<p class="pt-2 font-bold text-emerald-700">${json.changed.length ? '✅ Đã khoá: ' + json.changed.join(', ') : 'Không có gì cần khoá.'}</p>` : '');
+        }
+        async function lockSharing() {
+            if (!confirm('Tắt chia sẻ "ai có link" của trang tính gốc và thư mục kho Drive? Người được mời đích danh vẫn mở được.')) return;
+            loadSecurityCheck(await authAdminCall_('auth_lock_sharing'));
         }
         function editAdminUser(i, focusPw) {
             const u = adminUsers[i]; if (!u) return;
@@ -2166,6 +2267,10 @@
                 role: document.getElementById('au-role').value,
                 active: document.getElementById('au-active').checked
             };
+            if (body.role === 'GUEST') {
+                body.puc = document.getElementById('au-puc').value;
+                if (!body.puc) { errEl.textContent = 'Tài khoản Xã viên phải chọn Mã vùng trồng.'; return; }
+            }
             const pw = document.getElementById('au-password').value;
             if (pw) body.password = pw;
             btn.disabled = true; errEl.textContent = '';
@@ -3465,7 +3570,8 @@
         function openPhotoPicker_(opts) {
             opts = opts || {};
             const TF = CONFIG.TASK_FIELDS;
-            if (!hasRole_('ENGINEER')) { showToast('Cần tài khoản Cán bộ kỹ thuật trở lên để tải ảnh', 'error'); return; }
+            if (!hasRole_('GUEST')) { showToast('Hãy đăng nhập để tải ảnh', 'error'); return; }
+            // Xã viên: taskData máy chủ gửi về CHỈ có công việc của vùng mình -> popup tự giới hạn đúng vùng
             if (!TF.title || !taskData.some(t => t._id)) { showToast('Chưa có công việc nào trong tab Field_Tasks để gắn ảnh', 'error'); return; }
             const t = opts.taskId ? taskData.find(x => x._id === opts.taskId) : null;
             photoPicker_ = {
@@ -4110,7 +4216,7 @@
                 emptyState.classList.remove('hidden'); emptyState.classList.add('flex');
                 main.classList.add('hidden');
                 const link = document.getElementById('task-open-sheet-link');
-                if (link) link.href = CONFIG.SPREADSHEET_URL;
+                if (link) link.href = sheetUrl_();
                 return;
             }
             emptyState.classList.add('hidden'); emptyState.classList.remove('flex');
@@ -4681,10 +4787,9 @@
             const K = TASK_PHOTO_KIND_UI_[kind];
             const links = taskPhotoLinks_(t, kind);
             const gid = 'gal-' + kind + '-' + String(t._id || '').replace(/[^A-Za-z0-9_-]/g, '_');
-            const addBtn = t._id ? `<button type="button" data-pp-task="${esc(t._id)}" data-pp-kind="${kind}" class="need-eng text-[10px] font-black uppercase text-sky-700 hover:underline">+ Thêm ảnh</button>` : '';
+            const addBtn = t._id ? `<button type="button" data-pp-task="${esc(t._id)}" data-pp-kind="${kind}" class="text-[10px] font-black uppercase text-sky-700 hover:underline">+ Thêm ảnh</button>` : '';
             if (!links.length) {
-                // Tài khoản Khách: máy chủ ẩn cột link ảnh -> rỗng không có nghĩa là "chưa có ảnh", nên không báo gì
-                if (!hasRole_('ENGINEER')) return '';
+                if (!hasRole_('GUEST')) return '';
                 return `<div class="mt-2 pt-2 border-t border-slate-200/70 flex items-center justify-between text-[11px] text-slate-400">
                     <span>${K.icon} Chưa có ${K.label.toLowerCase()}</span>${addBtn}</div>`;
             }
@@ -5088,7 +5193,7 @@ Tiếp tục?`;
                 emptyState.classList.remove('hidden'); emptyState.classList.add('flex');
                 main.classList.add('hidden');
                 const link = document.getElementById('risk-open-sheet-link');
-                if (link) link.href = CONFIG.SPREADSHEET_URL;
+                if (link) link.href = sheetUrl_();
                 return;
             }
             emptyState.classList.add('hidden'); emptyState.classList.remove('flex');
@@ -5306,7 +5411,7 @@ Tiếp tục?`;
                 emptyState.classList.remove('hidden'); emptyState.classList.add('flex');
                 main.classList.add('hidden');
                 const link = document.getElementById('harvest-open-sheet-link');
-                if (link) link.href = CONFIG.SPREADSHEET_URL;
+                if (link) link.href = sheetUrl_();
                 return;
             }
             emptyState.classList.add('hidden'); emptyState.classList.remove('flex');
@@ -5490,7 +5595,7 @@ Tiếp tục?`;
                 emptyState.classList.remove('hidden'); emptyState.classList.add('flex');
                 main.classList.add('hidden');
                 const link = document.getElementById('knowledge-open-sheet-link');
-                if (link) link.href = CONFIG.SPREADSHEET_URL;
+                if (link) link.href = sheetUrl_();
                 return;
             }
             emptyState.classList.add('hidden'); emptyState.classList.remove('flex');

@@ -222,10 +222,12 @@
            Chỉ để gọn giao diện; máy chủ (Phan_Quyen.gs) mới là nơi chặn thật. */
         body:not(.role-engineer):not(.role-admin) .need-eng,
         body:not(.role-admin) .need-admin { display: none !important; }
-        /* Chỉ QUẢN TRỊ: xoá mọi thứ, sửa / thêm hồ sơ hộ (tab Data), nhập hàng loạt, nạp lưới Dryad */
-        body:not(.role-admin) [data-action="delete"],
-        body:not(.role-admin) #puc-tbody [data-action="edit"],
-        body:not(.role-admin) [onclick="openCreateForm()"],
+        /* Chỉ QUẢN TRỊ: xoá Task / Cảnh báo / Thu hoạch / Kiến thức, nhập hàng loạt, nạp lưới Dryad.
+           3.0.3: thêm / sửa / xóa HỘ (bảng PUC) mở cho Cán bộ kỹ thuật — chỉ nút "📊 Trang tính" vẫn riêng Quản trị. */
+        body:not(.role-admin) tbody:not(#puc-tbody) [data-action="delete"],
+        body:not(.role-engineer):not(.role-admin) #puc-tbody [data-action="delete"],
+        body:not(.role-engineer):not(.role-admin) #puc-tbody [data-action="edit"],
+        body:not(.role-engineer):not(.role-admin) [onclick="openCreateForm()"],
         body:not(.role-admin) [onclick*="task-import-input"],
         body:not(.role-admin) [onclick*="risk-import-input"],
         body:not(.role-admin) [onclick*="harvest-import-input"],
@@ -1563,7 +1565,7 @@
             FIELDS: {},
 
             // Phiên bản giao diện — so với "version" máy chủ trả về để cảnh báo khi link /exec còn chạy bản cũ.
-            APP_VERSION: "3.0.2"
+            APP_VERSION: "3.0.3"
         };
 
         // Tên cột thật trên tab "Data" sẽ được nạp vào đây sau khi gọi API lần đầu.
@@ -1921,7 +1923,8 @@
             if (action === 'generateSchedule') return String(payload.maPuc || '').toUpperCase() === 'ALL' ? 'ADMIN' : 'ENGINEER';
             if (ACTION_ROLES_UI_[action]) return ACTION_ROLES_UI_[action];
             if (!['create', 'createMany', 'update', 'delete'].includes(action)) return 'ADMIN';
-            if (action === 'delete' || entity === 'farmer') return 'ADMIN';
+            if (entity === 'farmer') return action === 'createMany' ? 'ADMIN' : 'ENGINEER'; // 3.0.3: Cán bộ thêm / sửa / xóa từng hộ
+            if (action === 'delete') return 'ADMIN';
             if (entity === 'cadmium') {
                 if (action === 'update') return 'ENGINEER';
                 const recs = action === 'createMany' ? (payload.records || []) : [payload.record || {}];

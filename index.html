@@ -357,6 +357,56 @@
             .action-btn { width: 40px; height: 40px; } /* vùng chạm đủ lớn cho ngón tay */
             #photo-modal, #lib-preview { padding: .5rem; }
         }
+        /* ===== 3.0.4 AGRI-ERP DASHBOARD (màn "Biểu đồ" — chỉ Cán bộ kỹ thuật & Quản trị) ===== */
+        #dash-body { background: #f8fafc; }
+        .dash-sec { border: 1px solid #e2e8f0; border-radius: 1.75rem; padding: 1.5rem; background: #fff; }
+        .dash-sec > header h3 { font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; color: #0f172a; display: flex; align-items: center; gap: .5rem; }
+        .dash-sec > header h3 .n { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: .6rem; background: #0f172a; color: #fff; font-size: 11px; }
+        .dash-sub { font-size: 11px; color: #64748b; margin-top: .3rem; line-height: 1.5; }
+        .dash-h4 { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; color: #334155; margin: 1.25rem 0 .6rem; }
+        .dash-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .75rem; margin-top: 1rem; }
+        .dash-kpi { background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 1.25rem; padding: .9rem 1rem; min-width: 0; }
+        .dash-kpi .l { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: .03em; }
+        .dash-kpi .v { font-size: 1.6rem; font-weight: 900; color: #0f172a; line-height: 1.15; margin-top: .2rem; font-variant-numeric: tabular-nums; }
+        .dash-kpi .v small { font-size: .8rem; font-weight: 800; color: #475569; margin-left: .15rem; }
+        .dash-kpi .s { font-size: 11px; color: #475569; margin-top: .2rem; }
+        .dash-meter { height: 6px; border-radius: 4px; background: #e2e8f0; overflow: hidden; margin-top: .5rem; }
+        .dash-meter > span { display: block; height: 100%; border-radius: 4px; background: #059669; }
+        .dash-stages { display: flex; flex-direction: column; gap: .7rem; }
+        .dash-stage { display: grid; grid-template-columns: minmax(0, 13rem) minmax(0, 1fr) 3.25rem; gap: .75rem; align-items: center; font-size: 12px; }
+        .dash-stage .nm { font-weight: 700; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dash-stage .nm small { display: block; font-weight: 600; color: #94a3b8; font-size: 10.5px; }
+        .dash-stage .pc { text-align: right; font-weight: 900; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .dash-bar { display: flex; gap: 2px; height: 16px; border-radius: 4px; overflow: hidden; background: #f1f5f9; }
+        .dash-bar > span { display: block; height: 100%; min-width: 0; cursor: default; }
+        .dash-bar > span:first-child { border-radius: 4px 0 0 4px; }
+        .dash-bar > span:last-child { border-radius: 0 4px 4px 0; }
+        .dash-legend { display: flex; flex-wrap: wrap; gap: .4rem 1rem; font-size: 11px; color: #475569; margin-top: .8rem; }
+        .dash-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: .35rem; vertical-align: -1px; }
+        .dash-scroll { overflow: auto; max-height: 26rem; border-radius: 1rem; border: 1px solid #f1f5f9; -webkit-overflow-scrolling: touch; }
+        .dash-table { width: 100%; font-size: 12px; border-collapse: separate; border-spacing: 0; }
+        .dash-table th { position: sticky; top: 0; z-index: 1; background: #fff; text-align: left; font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 800; padding: .55rem .65rem; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+        .dash-table td { padding: .55rem .65rem; border-bottom: 1px solid #f1f5f9; vertical-align: top; color: #334155; }
+        .dash-table td.num, .dash-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .dash-table tr.grp td { background: #f8fafc; font-weight: 900; color: #0f172a; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+        .dash-table tr.grp2 td { background: #fcfdfe; font-weight: 800; color: #475569; font-size: 11px; padding-left: 1.2rem; }
+        .dash-heat td.c { text-align: center; font-weight: 900; font-variant-numeric: tabular-nums; min-width: 3.4rem; border-left: 2px solid #fff; }
+        .dash-chip { display: inline-block; padding: .15rem .55rem; border-radius: 999px; font-size: 10px; font-weight: 800; white-space: nowrap; }
+        .dash-empty { padding: 1.25rem; border-radius: 1rem; background: #f8fafc; color: #64748b; font-size: 12px; text-align: center; }
+        .dash-2col { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1.25rem; }
+        @media (max-width: 1100px) { .dash-2col { grid-template-columns: minmax(0, 1fr); } }
+        @media (max-width: 768px) {
+            #overlay-chart .dash-head { padding: 1rem 1rem .75rem !important; }
+            #dash-body { padding: .75rem !important; }
+            .dash-sec { padding: 1rem; border-radius: 1.25rem; }
+            .dash-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+            .dash-kpi { padding: .7rem .75rem; border-radius: 1rem; }
+            .dash-kpi .v { font-size: 1.3rem; }
+            .dash-stage { grid-template-columns: minmax(0, 1fr) 3rem; gap: .35rem .5rem; }
+            .dash-stage .dash-bar { grid-column: 1 / -1; grid-row: 2; }
+            .dash-filters { width: 100%; }
+            .dash-filters select { flex: 1 1 40%; min-width: 0; }
+        }
 </style>
 </head>
 <body class="h-screen w-screen relative overflow-hidden text-slate-800">
@@ -370,7 +420,7 @@
         <nav class="flex-1 space-y-4">
             <button onclick="closeAllOverlays()" id="nav-gis" class="sidebar-btn active w-14 h-14 rounded-2xl flex items-center justify-center text-slate-400 hover:text-emerald-400"><i data-lucide="map"></i></button>
             <button onclick="openOverlay('puc')" id="nav-puc" class="sidebar-btn w-14 h-14 rounded-2xl flex items-center justify-center text-slate-400 hover:text-emerald-400"><i data-lucide="database"></i></button>
-            <button onclick="openOverlay('chart')" id="nav-chart" class="sidebar-btn w-14 h-14 rounded-2xl flex items-center justify-center text-slate-400 hover:text-emerald-400"><i data-lucide="bar-chart-3"></i></button>
+            <button onclick="openOverlay('chart')" id="nav-chart" title="Agri-ERP Dashboard — Trung tâm điều hành (Cán bộ &amp; Quản trị)" class="need-eng sidebar-btn w-14 h-14 rounded-2xl flex items-center justify-center text-slate-400 hover:text-emerald-400"><i data-lucide="bar-chart-3"></i></button>
             <button onclick="openWeather()" id="nav-weather" title="Thời tiết &amp; cảnh báo nông nghiệp" class="sidebar-btn w-14 h-14 rounded-2xl flex items-center justify-center text-slate-400 hover:text-emerald-400"><i data-lucide="cloud-sun-rain"></i></button>
             <button onclick="openOverlay('activity')" id="nav-activity" title="Nhật ký tiến độ canh tác" class="sidebar-btn w-14 h-14 rounded-2xl flex items-center justify-center text-slate-400 hover:text-emerald-400"><i data-lucide="activity"></i></button>
         </nav>
@@ -588,8 +638,28 @@
             </div>
         </div>
     </div>
+    <!-- 3.0.4: AGRI-ERP DASHBOARD — Trung tâm Điều hành & Phân tích (CHỈ Cán bộ kỹ thuật & Quản trị; nút menu có class need-eng) -->
     <div id="overlay-chart" class="overlay-screen">
-        <div class="bg-white w-full h-full rounded-[3.5rem] p-12"><canvas id="myChart"></canvas></div>
+        <div class="bg-white w-full h-full rounded-[3.5rem] flex flex-col overflow-hidden">
+            <div class="dash-head px-8 pt-7 pb-5 border-b">
+                <div class="flex justify-between items-start gap-3 flex-wrap">
+                    <div class="min-w-0">
+                        <h2 class="text-2xl font-black uppercase">📊 Agri-ERP Dashboard</h2>
+                        <p class="text-xs text-slate-500 mt-1">Trung tâm Điều hành &amp; Phân tích Nông nghiệp · <span id="dash-asof">—</span></p>
+                    </div>
+                    <div class="dash-filters flex items-center gap-2 flex-wrap">
+                        <select id="dash-tinh" onchange="onDashFilter_()" title="Lọc theo Tỉnh" class="form-input !py-2 !text-xs !rounded-full max-w-[13rem]"></select>
+                        <select id="dash-puc" onchange="onDashFilter_()" title="Lọc theo Vùng trồng (PUC)" class="form-input !py-2 !text-xs !rounded-full max-w-[15rem]"></select>
+                        <button class="btn-reload-trigger flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs uppercase px-4 py-2.5 rounded-full disabled:opacity-60 disabled:cursor-wait transition-opacity" onclick="reloadFromSheet()" title="Tải lại dữ liệu mới nhất từ trang tính">
+                            <span class="btn-reload-trigger-icon inline-block">⟳</span>
+                            <span class="btn-reload-trigger-label">Tải lại</span>
+                        </button>
+                        <button onclick="closeAllOverlays()" class="p-3 bg-slate-200 rounded-full" title="Đóng"><i data-lucide="x"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div id="dash-body" class="flex-1 overflow-y-auto custom-scrollbar px-8 py-6 space-y-6"></div>
+        </div>
     </div>
     <!-- THỜI TIẾT & CẢNH BÁO NÔNG NGHIỆP (Open-Meteo + Gemini, xử lý tại Thoi_Tiet.gs) -->
     <div id="overlay-weather" class="overlay-screen">
@@ -1565,7 +1635,7 @@
             FIELDS: {},
 
             // Phiên bản giao diện — so với "version" máy chủ trả về để cảnh báo khi link /exec còn chạy bản cũ.
-            APP_VERSION: "3.0.3"
+            APP_VERSION: "3.0.4"
         };
 
         // Tên cột thật trên tab "Data" sẽ được nạp vào đây sau khi gọi API lần đầu.
@@ -1947,6 +2017,7 @@
             const b = document.body;
             b.classList.remove('role-none', 'role-guest', 'role-engineer', 'role-admin');
             b.classList.add(role ? ROLE_UI_[role].cls : 'role-none');
+            if (!hasRole_('ENGINEER') && typeof isDashboardOpen_ === 'function' && isDashboardOpen_()) { closeAllOverlays(); document.getElementById('dash-body').innerHTML = ''; }
             const chipIcon = document.getElementById('auth-chip-icon'), chipText = document.getElementById('auth-chip-text');
             if (chipIcon) chipIcon.textContent = role ? ROLE_UI_[role].icon : '🔒';
             if (chipText) chipText.textContent = role ? (authSession.name || authSession.user) : 'Đăng nhập';
@@ -2807,6 +2878,7 @@
             applyZaloMapData(data.zaloMap); // tab "Zalo_Mapping" — tuỳ chọn
             renderAll();
             fitToFarms_();
+            if (isDashboardOpen_()) renderDashboard_(); // 3.0.4: Dashboard đang mở -> cập nhật theo dữ liệu mới
         }
 
         // Lần tải dữ liệu ĐẦU TIÊN của trang: căn bản đồ vừa khít mọi vườn có toạ độ hợp lệ (đã lọc rác
@@ -7700,9 +7772,489 @@ Tiếp tục?`;
             }
         }
 
+        // ==========================================================================
+        // 3.0.4 — AGRI-ERP DASHBOARD (Trung tâm Điều hành & Phân tích Nông nghiệp)
+        // CHỈ Cán bộ kỹ thuật & Quản trị: nút menu có class need-eng (ẩn với Xã viên / chưa đăng nhập),
+        // openOverlay('chart') chặn thêm 1 lớp, applyRoleUi_ tự đóng màn khi vai trò hạ xuống.
+        // Mọi số liệu tính TRÊN TRÌNH DUYỆT từ snapshot đã tải (Data / Field_Tasks / Harvest_Sales /
+        // Risk_Assessment) -> KHÔNG thêm lệnh gọi API nào, lớp bảo mật 3.0.3 phía máy chủ giữ nguyên.
+        // Biểu đồ vẽ bằng HTML/CSS thuần (không tạo thêm Chart.js) cho nhẹ trên điện thoại.
+        // ==========================================================================
+        const DASH_STAGES_ = [
+            { no: 1, label: 'GĐ1 · Phục hồi & Cơi 1', sub: 'Tỉa cành, bón phục hồi, làm cơi đọt 1' },
+            { no: 2, label: 'GĐ2 · Cơi 2 & Tạo mầm', sub: 'Nuôi cơi đọt 2, bón lân tạo mầm' },
+            { no: 3, label: 'GĐ3 · Xử lý ra hoa', sub: 'Siết nước, phủ bạt, Paclobutrazol' },
+            { no: 4, label: 'GĐ4 · Ra hoa & Thụ phấn', sub: 'Nhắp nước, thụ phấn' },
+            { no: 5, label: 'GĐ5 · Nuôi trái', sub: 'Tỉa trái, chống sượng cơm' },
+            { no: 6, label: 'GĐ6 · Thu hoạch', sub: 'Thu hái, hoàn thiện nhật ký' }
+        ];
+        const DASH_STATUS_ = [
+            { key: 'done', label: 'Đã xong', color: '#059669' },
+            { key: 'doing', label: 'Đang làm', color: '#f59e0b' },
+            { key: 'late', label: 'Quá hạn', color: '#dc2626' },
+            { key: 'todo', label: 'Cần làm', color: '#cbd5e1' }
+        ];
+        const DASH_ACTIVE_DAYS_ = 30;                               // cảnh báo sâu bệnh trên task còn "active" trong 30 ngày
+        const DASH_HARVEST_DAYS_ = 30, DASH_HARVEST_URGENT_ = 15;  // bảng đếm ngược thu hoạch
+        // Hoạt chất đã bị loại khỏi Danh mục thuốc BVTV được phép sử dụng tại Việt Nam (HTX rà soát lại khi danh mục đổi)
+        const DASH_BANNED_ = [
+            [/carbendazim/, 'Carbendazim'], [/benomyl/, 'Benomyl'], [/thiophanate/, 'Thiophanate-methyl'],
+            [/paraquat/, 'Paraquat'], [/2[,.]?\s?4[- ]?d\b/, '2,4-D'], [/glyphosate/, 'Glyphosate'],
+            [/chlorpyrifos(?!\s*-?\s*methyl)/, 'Chlorpyrifos ethyl'], [/fipronil/, 'Fipronil'], [/carbofuran/, 'Carbofuran']
+        ];
+        const DASH_PESTS_ = [
+            ['xi_mu', 'Xì mủ / Thối rễ', /xi mu|phytophthora|thoi re|thoi goc|nut than|chay mu/],
+            ['than_thu', 'Thán thư', /than thu|colletotrichum/],
+            ['ray', 'Rầy xanh / Rầy phấn', /\bray\b/],
+            ['bo_tri', 'Bọ trĩ', /bo tri|bu lach/],
+            ['rep_sap', 'Rệp sáp', /\brep\b/],
+            ['sau_duc', 'Sâu đục trái/thân', /sau duc|duc trai|duc qua|duc than|xen toc/],
+            ['nam_hong', 'Nấm hồng', /nam hong/],
+            ['chay_la', 'Cháy / Đốm lá', /chay la|dom la|dom rong|thoi la/],
+            ['nhen', 'Nhện đỏ', /\bnhen\b/],
+            ['khac', 'Khác', null]
+        ];
+        const DASH_HEAT_ = ['#fff7ed', '#fed7aa', '#fdba74', '#fb923c', '#c2410c']; // 1 sắc cam, nhạt -> đậm theo số cảnh báo
+        const dashFilter_ = { tinh: '', puc: '' };
+
+        function dashPucKey_(v) { return String(v === null || v === undefined ? '' : v).toUpperCase().replace(/['’]S\b.*$/, '').replace(/[^A-Z0-9]/g, ''); } // = pucKey_ (Phan_Quyen.gs)
+        function isDashboardOpen_() { const o = document.getElementById('overlay-chart'); return !!o && o.style.display === 'flex'; }
+        function dashPct_(a, b) { return b ? Math.round(a * 1000 / b) / 10 : 0; }
+        function dashFmt_(n, d) { return Number(n || 0).toLocaleString('vi-VN', { maximumFractionDigits: d === undefined ? 1 : d }); }
+        function dashDays_(d) { return Math.round((d - todayStart_()) / DAY_MS_); }
+
+        // "12,5" / "12.500" / "12.500 kg" / "1.234,5" -> số. null nếu không có số.
+        function dashNum_(s) {
+            const m = /\d[\d.,]*/.exec(String(s === null || s === undefined ? '' : s).replace(/\s/g, ''));
+            if (!m) return null;
+            let t = m[0].replace(/[.,]$/, '');
+            if (t.includes('.') && t.includes(',')) t = t.lastIndexOf(',') > t.lastIndexOf('.') ? t.replace(/\./g, '').replace(',', '.') : t.replace(/,/g, '');
+            else if (t.includes(',')) t = t.replace(',', '.');
+            else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '');
+            const n = parseFloat(t);
+            return isNaN(n) ? null : n;
+        }
+        // Sản lượng dự kiến (cột tab Data, mẫu nhập "12,50" = tấn). Ghi "kg" hoặc số > 200 -> coi là kg.
+        function dashYieldTon_(s) {
+            const n = dashNum_(s);
+            if (n === null || n <= 0) return null;
+            const u = normalizeSearch(s);
+            if (/\d\s*kg\b|\bkg\b/.test(u)) return n / 1000;
+            if (/\btan\b|\d\s*t\b/.test(u)) return n;
+            return n > 200 ? n / 1000 : n;
+        }
+
+        // ---- Chỉ mục vùng trồng từ tab Data: tỉnh, xã, số hộ, diện tích, sản lượng, ngày thu hoạch dự kiến
+        function dashPucIndex_() {
+            const F = CONFIG.FIELDS, m = new Map();
+            const xaCol = sheetHeaders.find(h => /^(xa|xa[\/ ]phuong|phuong[\/ ]xa)$/.test(normalizeSearch(h).replace(/_/g, ' ').trim())) || null; // cột "Xã" riêng (nếu có)
+            farmData.forEach(f => {
+                const raw = F.puc ? String(f[F.puc] || '').trim() : '';
+                const key = dashPucKey_(raw);
+                if (!key) return;
+                if (!m.has(key)) m.set(key, { key, name: raw, province: '', commune: '', households: 0, area: 0, yieldT: 0, yieldN: 0, harvestDates: [] });
+                const p = m.get(key);
+                p.households++;
+                if (!p.province && F.province) p.province = String(f[F.province] || '').trim();
+                if (!p.commune) p.commune = extractCommune(f) || (xaCol ? String(f[xaCol] || '').trim() : '');
+                if (F.area) p.area += parseArea(f);
+                const y = F.yieldEst ? dashYieldTon_(f[F.yieldEst]) : null;
+                if (y !== null) { p.yieldT += y; p.yieldN++; }
+                const hs = F.harvestStart ? parseVNDate(f[F.harvestStart]) : null;
+                if (hs) p.harvestDates.push(hs);
+            });
+            return m;
+        }
+        function dashProvinceOfPuc_(idx, pucRaw) { const p = idx.get(dashPucKey_(pucRaw)); return p ? p.province : ''; }
+        function dashInScope_(pucRaw, province) {
+            if (dashFilter_.puc && dashPucKey_(pucRaw) !== dashFilter_.puc) return false;
+            if (dashFilter_.tinh && provKey_(province || '') !== dashFilter_.tinh) return false;
+            return true;
+        }
+
+        function fillDashFilters_(idx) {
+            const selT = document.getElementById('dash-tinh'), selP = document.getElementById('dash-puc');
+            const provs = new Map();
+            idx.forEach(p => { if (p.province) provs.set(provKey_(p.province), p.province); });
+            if (!provs.has(dashFilter_.tinh)) dashFilter_.tinh = '';
+            selT.innerHTML = '<option value="">Toàn HTX — mọi tỉnh</option>' + [...provs].sort((a, b) => a[1].localeCompare(b[1], 'vi'))
+                .map(([k, v]) => `<option value="${esc(k)}">${esc(v)}</option>`).join('');
+            selT.value = dashFilter_.tinh;
+            const pucs = [...idx.values()].filter(p => !dashFilter_.tinh || provKey_(p.province) === dashFilter_.tinh).sort((a, b) => a.name.localeCompare(b.name, 'vi'));
+            if (!pucs.some(p => p.key === dashFilter_.puc)) dashFilter_.puc = '';
+            selP.innerHTML = '<option value="">Mọi vùng trồng (' + pucs.length + ')</option>' + pucs.map(p => `<option value="${esc(p.key)}">${esc(p.name)}</option>`).join('');
+            selP.value = dashFilter_.puc;
+        }
+        function onDashFilter_() {
+            const t = document.getElementById('dash-tinh').value;
+            if (t !== dashFilter_.tinh) { dashFilter_.tinh = t; dashFilter_.puc = ''; }
+            else dashFilter_.puc = document.getElementById('dash-puc').value;
+            renderDashboard_();
+        }
+
+        function dashSection_(no, title, sub, inner) {
+            return `<section class="dash-sec"><header><h3><span class="n">${no}</span>${title}</h3>${sub ? `<p class="dash-sub">${sub}</p>` : ''}</header>${inner}</section>`;
+        }
+        function dashKpi_(label, value, sub, meterPct, meterColor) {
+            return `<div class="dash-kpi"><div class="l">${label}</div><div class="v">${value}</div>${sub ? `<div class="s">${sub}</div>` : ''}` +
+                (meterPct !== undefined ? `<div class="dash-meter"><span style="width:${Math.max(0, Math.min(100, meterPct))}%;background:${meterColor || '#059669'}"></span></div>` : '') + '</div>';
+        }
+        function dashEmpty_(msg) { return `<div class="dash-empty mt-4">${msg}</div>`; }
+        function dashTaskPuc_(t) { const TF = CONFIG.TASK_FIELDS; return TF.puc ? String(t[TF.puc] || '').trim() : ''; }
+
+        function renderDashboard_() {
+            const body = document.getElementById('dash-body');
+            if (!body) return;
+            if (!hasRole_('ENGINEER')) { body.innerHTML = ''; return; } // phòng gọi thẳng từ console
+            const idx = dashPucIndex_();
+            fillDashFilters_(idx);
+            document.getElementById('dash-asof').textContent = farmData.length
+                ? 'Số liệu đồng bộ lúc ' + new Date().toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
+                : 'Chưa tải dữ liệu';
+            if (!farmData.length) { body.innerHTML = dashEmpty_('Chưa có dữ liệu — hãy đăng nhập và bấm "Tải lại".'); return; }
+            const tasks = taskData.filter(t => dashInScope_(dashTaskPuc_(t), taskProvince_(t)));
+            const ctx = { idx, tasks, violations: dashViolations_(tasks) };
+            body.innerHTML = [dashBlockTasks_(ctx), dashBlockSupplies_(ctx), dashBlockHarvest_(ctx), dashBlockRisk_(ctx)].join('');
+        }
+
+        // ---------------- KHỐI 1: TIẾN ĐỘ CANH TÁC & GIÁM SÁT THỰC ĐỊA ----------------
+        function dashBlockTasks_(ctx) {
+            const title = 'Tiến độ canh tác &amp; Giám sát thực địa';
+            if (!taskHeaders.length) return dashSection_(1, title, '', dashEmpty_('Chưa có tab "Field_Tasks" trên trang tính.'));
+            const tasks = ctx.tasks;
+            const zero = () => ({ done: 0, doing: 0, late: 0, todo: 0 });
+            const cnt = zero(), stages = DASH_STAGES_.map(s => Object.assign({ c: zero(), n: 0 }, s));
+            let noStage = 0, withPhoto = 0, doneN = 0, doneWithPhoto = 0;
+            const late = [];
+            tasks.forEach(t => {
+                const st = computeTaskStatus(t);
+                cnt[st.key]++;
+                const s = stages[taskStageNo_(t) - 1];
+                if (s) { s.c[st.key]++; s.n++; } else noStage++;
+                const hasPhoto = taskPhotoLinks_(t, 'task').length > 0;
+                if (hasPhoto) withPhoto++;
+                if (st.key === 'done') { doneN++; if (hasPhoto) doneWithPhoto++; }
+                if (st.key === 'late') late.push(t);
+            });
+            const total = tasks.length;
+            const kpis = '<div class="dash-kpis">' +
+                dashKpi_('Tổng số Task', dashFmt_(total, 0), dashFmt_(new Set(tasks.map(t => dashPucKey_(dashTaskPuc_(t))).filter(Boolean)).size, 0) + ' vùng trồng có lịch') +
+                dashKpi_('Hoàn thành', dashFmt_(dashPct_(cnt.done, total)) + '<small>%</small>', dashFmt_(cnt.done, 0) + ' / ' + dashFmt_(total, 0) + ' task đã xong', dashPct_(cnt.done, total)) +
+                dashKpi_('🔴 Quá hạn', dashFmt_(cnt.late, 0), 'đã qua ngày kết thúc mà chưa xong', dashPct_(cnt.late, total), '#dc2626') +
+                dashKpi_('Cần làm / Đang làm', dashFmt_(cnt.todo, 0) + '<small>/ ' + dashFmt_(cnt.doing, 0) + '</small>', 'chưa bắt đầu / đang thực hiện') +
+                dashKpi_('📷 Có ảnh xác nhận', dashFmt_(dashPct_(withPhoto, total)) + '<small>%</small>',
+                    dashFmt_(withPhoto, 0) + ' task có ảnh · ' + dashFmt_(dashPct_(doneWithPhoto, doneN)) + '% task đã xong có ảnh', dashPct_(withPhoto, total), '#0284c7') +
+                '</div>';
+            const bars = stages.map(s => {
+                const segs = DASH_STATUS_.filter(x => s.c[x.key]).map(x =>
+                    `<span style="flex:${s.c[x.key]} 1 0;background:${x.color}" title="${esc(s.label)} — ${x.label}: ${s.c[x.key]} task (${dashFmt_(dashPct_(s.c[x.key], s.n))}%)"></span>`).join('');
+                return `<div class="dash-stage"><div class="nm" title="${esc(s.sub)}">${esc(s.label)}<small>${s.n ? dashFmt_(s.n, 0) + ' task · ' + s.c.late + ' quá hạn' : 'chưa có task'}</small></div>` +
+                    `<div class="dash-bar" role="img" aria-label="${esc(s.label)}: ${dashFmt_(dashPct_(s.c.done, s.n))}% hoàn thành">${segs}</div>` +
+                    `<div class="pc">${s.n ? dashFmt_(dashPct_(s.c.done, s.n)) + '%' : '—'}</div></div>`;
+            }).join('');
+            const legend = '<div class="dash-legend">' + DASH_STATUS_.map(x => `<span><i style="background:${x.color}"></i>${x.label}</span>`).join('') +
+                (noStage ? `<span class="text-slate-400">· ${noStage} task chưa xác định giai đoạn</span>` : '') + '</div>';
+            const TF = CONFIG.TASK_FIELDS;
+            late.sort((a, b) => (parseVNDate(a[TF.end]) || 0) - (parseVNDate(b[TF.end]) || 0));
+            const lateHtml = late.length ? `<div class="dash-scroll" style="max-height:19rem"><table class="dash-table"><thead><tr><th>Vùng trồng</th><th>Công việc</th><th class="num">Trễ</th></tr></thead><tbody>` +
+                late.slice(0, 50).map(t => {
+                    const e = parseVNDate(t[TF.end]);
+                    return `<tr><td class="font-bold whitespace-nowrap">${esc(dashTaskPuc_(t))}</td><td>${esc(t[TF.title] || '')}<div class="text-[10px] text-slate-400">${esc(t[TF.stage] || '')}</div></td>` +
+                        `<td class="num text-red-700 font-black">${e ? -dashDays_(e) + ' ngày' : '—'}</td></tr>`;
+                }).join('') + '</tbody></table></div>' + (late.length > 50 ? `<p class="dash-sub">… và ${late.length - 50} task quá hạn khác (xem tab Nhật ký → Công việc).</p>` : '')
+                : '<div class="dash-empty">🎉 Không có task quá hạn.</div>';
+            return dashSection_(1, title, 'Trạng thái tính lại từ % tiến độ + ngày kết thúc (giống bảng Công việc). Ảnh xác nhận = cột Link_Anh_Xac_Nhan.',
+                kpis + `<div class="dash-2col"><div><h4 class="dash-h4">Tỷ lệ hoàn thành theo giai đoạn</h4><div class="dash-stages">${bars}</div>${legend}</div>` +
+                `<div><h4 class="dash-h4">Task quá hạn cần đôn đốc (${late.length})</h4>${lateHtml}</div></div>`);
+        }
+
+        // ---------------- KHỐI 2: VẬT TƯ & QUY CHUẨN VIETGAP ----------------
+        const DASH_UNIT_MAP_ = { kg: ['kg', 1], kilogam: ['kg', 1], kilogram: ['kg', 1], g: ['kg', .001], gam: ['kg', .001], gram: ['kg', .001], gr: ['kg', .001], tan: ['kg', 1000],
+            l: ['lít', 1], lit: ['lít', 1], ml: ['lít', .001], cc: ['lít', .001], bao: ['bao', 1], chai: ['chai', 1], goi: ['gói', 1], can: ['can', 1], hop: ['hộp', 1], lo: ['lọ', 1] };
+        const DASH_UNIT_RE_ = '(kg|kilogam|kilogram|gam|gram|gr|g|tấn|tan|lít|lit|l|ml|cc|bao|chai|gói|goi|can|hộp|hop|lọ|lo)(?![\\p{L}\\d])';
+        // "NPK 16-16-8 2 bao, Abamectin 500ml; 3 kg K2SO4" -> [{name, qty, unit}] (qty null = chỉ ghi tên)
+        function dashParseSupplies_(text) {
+            const out = [];
+            const reTail = new RegExp('^(.*?)[\\s:=x×\\-–]*(\\d+(?:[.,]\\d+)?)\\s*' + DASH_UNIT_RE_, 'u');
+            const reHead = new RegExp('^(\\d+(?:[.,]\\d+)?)\\s*' + DASH_UNIT_RE_ + '\\s+(.+)$', 'u');
+            String(text || '').normalize('NFC').split(/[;\n+]|,(?!\d)/).forEach(seg => {
+                const raw = seg.replace(/^[\s\-•*·]+|[\s.]+$/g, '').replace(/^(vật tư|thuốc|phân)\s*(đã dùng|sử dụng)?\s*:\s*/i, '');
+                if (!raw || raw.length < 2) return;
+                const low = raw.toLowerCase();
+                let name = '', qty = null, unit = '';
+                let m = reTail.exec(low);
+                if (m && m[1].trim()) { name = raw.slice(0, m[1].length); qty = m[2]; unit = m[3]; }
+                else if ((m = reHead.exec(low))) { name = raw.slice(low.length - m[3].length); qty = m[1]; unit = m[2]; }
+                else name = raw;
+                name = name.replace(/[\s:=x×\-–(]+$/, '').trim();
+                if (!name || /^\d+([.,]\d+)?$/.test(name)) return;
+                const u = unit ? DASH_UNIT_MAP_[normalizeSearch(unit)] : null;
+                out.push({ name, qty: u ? parseFloat(qty.replace(',', '.')) * u[1] : null, unit: u ? u[0] : '' });
+            });
+            return out;
+        }
+        function dashSupplyKind_(nameNorm) {
+            const n = nameNorm;
+            if (/thuoc|\btru\b|ectin|metalaxyl|fosetyl|phosph(on|it)|mancozeb|imidacloprid|thiamethoxam|azoxystrobin|difenoconazole|hexaconazole|propineb|tebuconazole|acetamiprid|buprofezin|pyridaben|propargite|cypermethrin|chlorpyrifos|fipronil|carbendazim|benomyl|thiophanate|carbofuran|paraquat|glyphosate|validamycin|kasugamycin|spinosad|dau khoang|luu huynh|sulfur|copper|dong oxy|oxyclorua|hydroxit dong|\bsk ?99\b|nano bac|diet|bvtv/.test(n)) return 'bvtv';
+            if (/phan|npk|huu co|\bvoi\b|\blan\b|kali|k2so4|kcl|\bure\b|\bdam\b|\bdap\b|\bmkp\b|canxi|calci|magie|\bbo\b|humic|fulvic|vi luong|trung luong|amino|rong bien|\bsa\b|super|dolomite|trichoderma|vi sinh|\bbon\b|paclobutrazol|\bk2o\b|p2o5/.test(n)) return 'phan';
+            return 'khac';
+        }
+        const DASH_KIND_UI_ = { phan: ['Phân bón', 'bg-emerald-100 text-emerald-800'], bvtv: ['Thuốc BVTV', 'bg-violet-100 text-violet-800'], khac: ['Khác', 'bg-slate-100 text-slate-600'] };
+        function dashAmountText_(units, times) {
+            const parts = Object.keys(units).map(u => dashFmt_(units[u], 2) + ' ' + u);
+            return parts.length ? parts.join(' · ') : (times ? times + ' lần ghi' : '—');
+        }
+        // Câu phủ định ngay trước từ khoá ("không dùng Paraquat", "tránh carbendazim") -> bỏ qua
+        function dashNegated_(n, at) { return /(khong|ko|tranh|cam|thay vi|thay cho|ngung|bo)\s*(duoc\s*)?(dung|su dung|bon|phun)?\s*$/.test(n.slice(Math.max(0, at - 28), at)); }
+        function dashViolations_(tasks) {
+            const TF = CONFIG.TASK_FIELDS, out = [];
+            tasks.forEach(t => {
+                const used = TF.used ? String(t[TF.used] || '') : '', note = TF.note ? stripAutoTag_(t[TF.note]) : '';
+                const n = normalizeSearch(used + ' \n ' + note);
+                const base = { task: t, puc: dashTaskPuc_(t), date: (TF.doneDate && t[TF.doneDate]) || (TF.start && t[TF.start]) || '' };
+                DASH_BANNED_.forEach(([re, label]) => {
+                    const g = new RegExp(re.source, 'g'); let m;
+                    while ((m = g.exec(n))) { if (!dashNegated_(n, m.index)) { out.push(Object.assign({ level: 'red', kind: 'Hoạt chất cấm', text: label + ' — đã bị loại khỏi danh mục thuốc BVTV được phép dùng tại Việt Nam.' }, base)); break; } }
+                });
+                taskAgroWarnings_(t).forEach(w => out.push(Object.assign({ level: w.key === 'kcl' ? 'red' : 'amber', kind: w.key === 'kcl' ? 'Kali đỏ (KCl)' : 'Đi đọt khi nuôi trái', text: w.text.replace(/^\S+\s/, '') }, base)));
+                const phi = taskPhiInfo_(t);
+                if (phi && phi.violation) out.push(Object.assign({ level: 'red', kind: 'Vi phạm PHI', text: 'Phun/bón ngày ' + fmtVN_(phi.applied) + ', cách ly ' + phi.phi + ' ngày -> an toàn từ ' + fmtVN_(phi.safeFrom) + ' nhưng lịch thu hái ' + fmtVN_(phi.harvest.date) + '.' }, base));
+            });
+            return out;
+        }
+        function dashBlockSupplies_(ctx) {
+            const title = 'Vật tư &amp; Quy chuẩn VietGAP';
+            if (!taskHeaders.length) return dashSection_(2, title, '', dashEmpty_('Chưa có tab "Field_Tasks" trên trang tính.'));
+            const TF = CONFIG.TASK_FIELDS;
+            const prods = new Map();
+            const totals = { phan: {}, bvtv: {} };
+            let usedTasks = 0, planned = 0;
+            const plannedItems = new Map();
+            ctx.tasks.forEach(t => {
+                const st = computeTaskStatus(t);
+                const used = TF.used ? String(t[TF.used] || '').trim() : '';
+                if (!used) {
+                    // "Đang sử dụng": task đang làm / quá hạn có vật tư kế hoạch (cột Vat_Tu_Hoat_Chat) nhưng chưa ghi đã dùng
+                    if ((st.key === 'doing' || st.key === 'late') && TF.supplies && String(t[TF.supplies] || '').trim()) {
+                        planned++;
+                        dashParseSupplies_(t[TF.supplies]).forEach(s => { const k = normalizeSearch(s.name); const p = plannedItems.get(k) || { name: s.name, n: 0 }; p.n++; plannedItems.set(k, p); });
+                    }
+                    return;
+                }
+                usedTasks++;
+                const stage = taskStageNo_(t);
+                dashParseSupplies_(used).forEach(s => {
+                    const key = normalizeSearch(s.name).replace(/\s+/g, ' ');
+                    if (!prods.has(key)) prods.set(key, { name: s.name, kind: dashSupplyKind_(key), times: 0, units: {}, byStage: {} });
+                    const p = prods.get(key);
+                    p.times++;
+                    const bs = p.byStage[stage] || (p.byStage[stage] = { units: {}, times: 0 });
+                    bs.times++;
+                    if (s.qty !== null && !isNaN(s.qty)) {
+                        p.units[s.unit] = (p.units[s.unit] || 0) + s.qty;
+                        bs.units[s.unit] = (bs.units[s.unit] || 0) + s.qty;
+                        if (totals[p.kind]) totals[p.kind][s.unit] = (totals[p.kind][s.unit] || 0) + s.qty;
+                    }
+                });
+            });
+            const list = [...prods.values()].sort((a, b) => ({ phan: 0, bvtv: 1, khac: 2 }[a.kind] - { phan: 0, bvtv: 1, khac: 2 }[b.kind]) || b.times - a.times);
+            const v = ctx.violations, vRed = v.filter(x => x.level === 'red').length;
+            const kpis = '<div class="dash-kpis">' +
+                dashKpi_('🌱 Phân bón đã dùng', esc(dashAmountText_(totals.phan, 0)), list.filter(p => p.kind === 'phan').length + ' loại phân') +
+                dashKpi_('🧪 Thuốc BVTV đã dùng', esc(dashAmountText_(totals.bvtv, 0)), list.filter(p => p.kind === 'bvtv').length + ' loại thuốc') +
+                dashKpi_('Task đã ghi vật tư', dashFmt_(usedTasks, 0), planned + ' task đang làm có vật tư kế hoạch') +
+                dashKpi_('⚠️ Cảnh báo VietGAP', dashFmt_(v.length, 0), vRed + ' mức nghiêm trọng', undefined) + '</div>';
+            const stageCols = DASH_STAGES_.map(s => s.no);
+            const hasUnknown = list.some(p => p.byStage[0]);
+            const table = list.length ? `<div class="dash-scroll"><table class="dash-table"><thead><tr><th>Vật tư</th><th>Loại</th>` +
+                stageCols.map(n => `<th class="num" title="${esc(DASH_STAGES_[n - 1].label)}">${n === 1 ? 'GĐ1 · Cơi 1' : n === 2 ? 'GĐ2 · Cơi 2' : 'GĐ' + n}</th>`).join('') +
+                (hasUnknown ? '<th class="num">Chưa rõ GĐ</th>' : '') + '<th class="num">Tổng</th></tr></thead><tbody>' +
+                list.slice(0, 60).map(p => `<tr><td class="font-bold">${esc(p.name)}</td><td><span class="dash-chip ${DASH_KIND_UI_[p.kind][1]}">${DASH_KIND_UI_[p.kind][0]}</span></td>` +
+                    stageCols.concat(hasUnknown ? [0] : []).map(n => `<td class="num">${p.byStage[n] ? esc(dashAmountText_(p.byStage[n].units, p.byStage[n].times)) : '<span class="text-slate-300">—</span>'}</td>`).join('') +
+                    `<td class="num font-black">${esc(dashAmountText_(p.units, p.times))}<div class="text-[10px] text-slate-400 font-semibold">${p.times} lần ghi</div></td></tr>`).join('') +
+                '</tbody></table></div>' + (list.length > 60 ? `<p class="dash-sub">… và ${list.length - 60} vật tư khác.</p>` : '')
+                : dashEmpty_('Chưa task nào ghi "Vật tư đã dùng".');
+            const plannedHtml = plannedItems.size ? '<p class="dash-sub mt-2">🔄 Đang triển khai (theo kế hoạch, chưa ghi đã dùng): ' +
+                [...plannedItems.values()].sort((a, b) => b.n - a.n).slice(0, 8).map(p => `<b>${esc(p.name)}</b> (${p.n} task)`).join(', ') + '</p>' : '';
+            const vio = v.length ? `<div class="dash-scroll" style="max-height:22rem"><table class="dash-table"><thead><tr><th>Mức</th><th>Vùng trồng</th><th>Công việc</th><th>Vi phạm</th></tr></thead><tbody>` +
+                v.sort((a, b) => (a.level === 'red' ? 0 : 1) - (b.level === 'red' ? 0 : 1)).slice(0, 80).map(x =>
+                    `<tr><td><span class="dash-chip ${x.level === 'red' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'}">${x.level === 'red' ? '🔴 Nghiêm trọng' : '🟡 Cần xử lý'}</span></td>` +
+                    `<td class="font-bold whitespace-nowrap">${esc(x.puc)}</td><td>${esc(x.task[TF.title] || '')}<div class="text-[10px] text-slate-400">${esc(x.date)}</div></td>` +
+                    `<td><b>${esc(x.kind)}</b> — ${esc(x.text)}</td></tr>`).join('') + '</tbody></table></div>'
+                : '<div class="dash-empty">✅ Chưa phát hiện vật tư / thao tác ngoài quy chuẩn VietGAP.</div>';
+            return dashSection_(2, title, 'Tự tách "tên – số lượng – đơn vị" từ cột Vật tư đã dùng (g→kg, ml→lít; dòng không ghi số được đếm "lần ghi"). Nhóm theo giai đoạn: GĐ1 = cơi đọt 1, GĐ2 = cơi đọt 2.',
+                kpis + '<h4 class="dash-h4">Lượng vật tư theo giai đoạn / đợt cơi đọt</h4>' + table + plannedHtml +
+                `<h4 class="dash-h4">Cảnh báo vi phạm VietGAP (${v.length})</h4><p class="dash-sub" style="margin:-.3rem 0 .6rem">Kiểm tra: hoạt chất đã bị cấm, Kali đỏ (KCl) gây sượng cơm, cây đi đọt khi nuôi trái chưa xử lý MKP, phun/bón chưa hết thời gian cách ly (PHI) trước ngày thu hái.</p>` + vio);
+        }
+
+        // ---------------- KHỐI 3: DỰ BÁO SẢN LƯỢNG & ĐẾM NGƯỢC THU HOẠCH ----------------
+        function dashBlockHarvest_(ctx) {
+            const idx = ctx.idx, TF = CONFIG.TASK_FIELDS || {}, today = todayStart_();
+            const pucs = [...idx.values()].filter(p => dashInScope_(p.name, p.province));
+            const area = pucs.reduce((s, p) => s + p.area, 0), yieldT = pucs.reduce((s, p) => s + p.yieldT, 0);
+            const hh = pucs.reduce((s, p) => s + p.households, 0), hhYield = pucs.reduce((s, p) => s + p.yieldN, 0);
+            // Ngày thu hoạch gần nhất của từng vùng: task Thu hái (Ma_Quy_Trinh PUC-TH-02) chưa xong, dự phòng cột "Bắt đầu thu hoạch" của hộ
+            const hcode = (taskMatrix && taskMatrix.harvestCode) || 'PUC-TH-02';
+            const next = new Map();
+            const consider = (key, raw, start, end, src, prov) => {
+                if (!key || end < today) return;
+                const cur = next.get(key);
+                if (!cur || start < cur.start) next.set(key, { key, raw, start, end, src, prov: prov || '' });
+            };
+            taskData.forEach(t => {
+                const qt = TF.qt ? String(t[TF.qt] || '').trim() : '';
+                const isH = qt ? qt === hcode : (taskPhase_(t) === 'thu_hoach' && /thu hai|thu hoach/.test(normalizeSearch(t[TF.title])));
+                if (!isH || computeTaskStatus(t).key === 'done') return;
+                const s = TF.start ? parseVNDate(t[TF.start]) : null;
+                if (!s) return;
+                consider(dashPucKey_(dashTaskPuc_(t)), dashTaskPuc_(t), s, (TF.end && parseVNDate(t[TF.end])) || s, 'Lịch công việc', taskProvince_(t));
+            });
+            idx.forEach(p => p.harvestDates.forEach(d => { if (!next.has(p.key)) consider(p.key, p.name, d, d, 'Hồ sơ hộ'); }));
+            // Thời gian cách ly (PHI) còn hiệu lực + cảnh báo VietGAP theo vùng -> điều kiện cấp tem mã số vùng trồng
+            const safeFrom = new Map(), vioByPuc = new Map();
+            taskData.forEach(t => {
+                const phi = taskPhiInfo_(t);
+                if (!phi || !phi.safeFrom) return;
+                const k = dashPucKey_(dashTaskPuc_(t));
+                if (!safeFrom.has(k) || phi.safeFrom > safeFrom.get(k)) safeFrom.set(k, phi.safeFrom);
+            });
+            dashViolations_(taskData).forEach(x => { const k = dashPucKey_(x.puc); vioByPuc.set(k, (vioByPuc.get(k) || 0) + 1); });
+            const rows = [...next.values()].map(h => {
+                const p = idx.get(h.key) || { name: h.raw, province: h.prov, commune: '', households: 0, area: 0, yieldT: 0 };
+                return Object.assign({ p, days: Math.max(0, Math.ceil((h.start - today) / DAY_MS_)), ongoing: h.start <= today }, h);
+            }).filter(r => r.days <= DASH_HARVEST_DAYS_ && dashInScope_(r.raw, r.p.province)).sort((a, b) => a.start - b.start);
+            const soon = rows.filter(r => r.days <= DASH_HARVEST_URGENT_).length;
+            const HF = CONFIG.HARVEST_FIELDS || {};
+            const sales = harvestData.filter(h => dashInScope_(HF.puc ? h[HF.puc] : '', dashProvinceOfPuc_(idx, HF.puc ? h[HF.puc] : '')));
+            const soldT = sales.reduce((s, h) => s + harvestTotal_(h), 0);
+            const kpis = '<div class="dash-kpis">' +
+                dashKpi_('🌳 Sản lượng dự kiến', dashFmt_(yieldT) + '<small>tấn</small>', hhYield + '/' + hh + ' hộ có số liệu' + (area ? ' · ' + dashFmt_(yieldT / area) + ' tấn/ha' : '')) +
+                dashKpi_('📐 Diện tích canh tác', dashFmt_(area, 2) + '<small>ha</small>', dashFmt_(hh, 0) + ' hộ · ' + pucs.length + ' vùng trồng') +
+                dashKpi_('⏳ Sắp thu hoạch', dashFmt_(rows.length, 0) + '<small>vùng</small>', soon + ' vùng trong ' + DASH_HARVEST_URGENT_ + ' ngày tới') +
+                dashKpi_('🚚 Đã thu hoạch / bán', dashFmt_(soldT) + '<small>tấn</small>', sales.length + ' đợt ghi ở Harvest_Sales' + (yieldT ? ' · ' + dashFmt_(dashPct_(soldT, yieldT)) + '% dự kiến' : '')) + '</div>';
+            const table = rows.length ? `<div class="dash-scroll"><table class="dash-table"><thead><tr><th>Còn</th><th>Vùng trồng</th><th>Tỉnh / Xã</th><th class="num">Hộ</th><th class="num">Diện tích</th><th class="num">SL dự kiến</th><th>Ngày thu hoạch</th><th>Tem mã số vùng trồng</th></tr></thead><tbody>` +
+                rows.map(r => {
+                    const sf = safeFrom.get(r.key), nv = vioByPuc.get(r.key) || 0;
+                    const phiWarn = sf && sf > r.start;
+                    const tem = nv || phiWarn
+                        ? `<span class="dash-chip bg-amber-100 text-amber-800">⚠️ Kiểm tra trước khi cấp</span><div class="text-[10px] text-slate-500 mt-1">${phiWarn ? 'Hết cách ly PHI từ ' + fmtVN_(sf) + '. ' : ''}${nv ? nv + ' cảnh báo VietGAP.' : ''}</div>`
+                        : '<span class="dash-chip bg-emerald-100 text-emerald-800">✅ Đủ điều kiện</span>';
+                    const badge = r.ongoing ? '<span class="dash-chip bg-violet-100 text-violet-800">🟣 Đang thu hoạch</span>'
+                        : `<span class="dash-chip ${r.days <= DASH_HARVEST_URGENT_ ? 'bg-red-100 text-red-700' : 'bg-sky-100 text-sky-800'}">${r.days <= DASH_HARVEST_URGENT_ ? '🔴' : '🔵'} ${r.days} ngày</span>`;
+                    return `<tr><td>${badge}</td><td class="font-bold whitespace-nowrap">${esc(r.p.name || r.raw)}</td><td>${esc(r.p.province || '—')}<div class="text-[10px] text-slate-400">${esc(r.p.commune || '')}</div></td>` +
+                        `<td class="num">${r.p.households || '—'}</td><td class="num">${r.p.area ? dashFmt_(r.p.area, 2) + ' ha' : '—'}</td><td class="num">${r.p.yieldT ? dashFmt_(r.p.yieldT) + ' tấn' : '—'}</td>` +
+                        `<td class="whitespace-nowrap">${fmtVN_(r.start)}${r.end > r.start ? ' – ' + fmtVN_(r.end) : ''}<div class="text-[10px] text-slate-400">${esc(r.src)}</div></td><td>${tem}</td></tr>`;
+                }).join('') + '</tbody></table></div>'
+                : dashEmpty_('Không có vùng trồng nào dự kiến thu hoạch trong ' + DASH_HARVEST_DAYS_ + ' ngày tới.');
+            return dashSection_(3, 'Dự báo sản lượng &amp; Đếm ngược thu hoạch',
+                'Sản lượng / diện tích cộng từ tab Data. Ngày thu hoạch lấy từ task Thu hái chưa xong trong lịch 21 công việc, nếu vùng chưa có thì từ cột "Bắt đầu thu hoạch" của hộ.',
+                kpis + `<h4 class="dash-h4">Vùng trồng sắp thu hoạch trong ${DASH_HARVEST_DAYS_} ngày — chủ động liên hệ thu mua &amp; cấp tem</h4>` + table);
+        }
+
+        // ---------------- KHỐI 4: BẢN ĐỒ NHIỆT RỦI RO & SÂU BỆNH ----------------
+        function dashPestTypes_(text) {
+            const n = normalizeSearch(text).trim();
+            if (!n || /^(khong|an toan|binh thuong|chua (phat hien|ghi nhan)|none)\b/.test(n)) return [];
+            const hits = DASH_PESTS_.filter(p => p[2] && p[2].test(n)).map(p => p[0]);
+            return hits.length ? hits : ['khac'];
+        }
+        const DASH_SEV_RANK_ = { '🔴': 3, '🟠': 2, '🟡': 1 };
+        function dashBlockRisk_(ctx) {
+            const idx = ctx.idx, RF = CONFIG.RISK_FIELDS || {}, TF = CONFIG.TASK_FIELDS || {};
+            const cutoff = addDays_(todayStart_(), -DASH_ACTIVE_DAYS_);
+            const cells = new Map(); // pucKey -> { raw, types: {type: n}, sev, src:Set }
+            const add = (raw, province, text, src) => {
+                const types = dashPestTypes_(text);
+                if (!types.length || !dashInScope_(raw, province)) return;
+                const key = dashPucKey_(raw) || raw;
+                const c = cells.get(key) || { raw, types: {}, sev: 0, src: new Set(), notes: [] };
+                types.forEach(ty => c.types[ty] = (c.types[ty] || 0) + 1);
+                c.sev = Math.max(c.sev, DASH_SEV_RANK_[severityBadge_(text).dot] || 1);
+                c.src.add(src);
+                if (c.notes.length < 4) c.notes.push(String(text).trim().slice(0, 80));
+                cells.set(key, c);
+            };
+            // (1) Đánh giá Risk_Assessment MỚI NHẤT của từng vùng có Dịch bệnh khác "Không"
+            if (RF.disease && RF.puc) {
+                const latest = new Map();
+                riskData.forEach((r, i) => {
+                    const k = dashPucKey_(r[RF.puc]); if (!k) return;
+                    const d = (RF.date && parseVNDate(r[RF.date])) || null;
+                    const cur = latest.get(k);
+                    if (!cur || (d && (!cur.d || d >= cur.d)) || (!d && !cur.d && i > cur.i)) latest.set(k, { r, d, i });
+                });
+                latest.forEach(({ r }) => add(String(r[RF.puc]).trim(), dashProvinceOfPuc_(idx, r[RF.puc]), r[RF.disease], 'Đánh giá rủi ro'));
+            }
+            // (2) Cảnh báo sâu bệnh ghi trên task: task chưa xong, hoặc xong trong 30 ngày gần nhất.
+            //     Bỏ dòng tự động chưa ai đụng tới (cảnh báo phòng ngừa in sẵn trong mẫu lịch, không phải phát hiện thật).
+            if (TF.pest) ctx.tasks.forEach(t => {
+                const text = String(t[TF.pest] || '').trim();
+                if (!text) return;
+                const st = computeTaskStatus(t);
+                const auto = TF.note && /^\[TỰ ĐỘNG/.test(String(t[TF.note] || '').trim());
+                if (auto && st.key !== 'done' && st.pct === 0 && !(TF.doneDate && t[TF.doneDate])) return;
+                const d = (TF.doneDate && parseVNDate(t[TF.doneDate])) || (TF.end && parseVNDate(t[TF.end])) || (TF.start && parseVNDate(t[TF.start]));
+                if (st.key === 'done' && (!d || d < cutoff)) return;
+                add(dashTaskPuc_(t), taskProvince_(t), text, 'Nhật ký công việc');
+            });
+            const types = DASH_PESTS_.filter(p => [...cells.values()].some(c => c.types[p[0]]));
+            const typeTotal = {}; types.forEach(p => typeTotal[p[0]] = [...cells.values()].reduce((s, c) => s + (c.types[p[0]] || 0), 0));
+            const maxN = Math.max(1, ...[...cells.values()].flatMap(c => Object.values(c.types)));
+            const heat = n => DASH_HEAT_[Math.min(DASH_HEAT_.length - 1, Math.ceil(n / maxN * (DASH_HEAT_.length - 1)))];
+            // Nhóm Tỉnh -> Xã -> Mã PUC
+            const tree = new Map();
+            cells.forEach((c, key) => {
+                const p = idx.get(key) || { name: c.raw, province: '', commune: '' };
+                const tinh = p.province || 'Chưa rõ tỉnh', xa = p.commune || 'Chưa rõ xã';
+                if (!tree.has(tinh)) tree.set(tinh, new Map());
+                const t = tree.get(tinh);
+                if (!t.has(xa)) t.set(xa, []);
+                t.get(xa).push(Object.assign({ name: p.name || c.raw }, c));
+            });
+            const sumTypes = list => { const o = {}; list.forEach(c => types.forEach(p => o[p[0]] = (o[p[0]] || 0) + (c.types[p[0]] || 0))); return o; };
+            const sevChip = s => s >= 3 ? '<span class="dash-chip bg-red-100 text-red-700">🔴 Nặng</span>' : s === 2 ? '<span class="dash-chip bg-orange-100 text-orange-700">🟠 Trung bình</span>' : '<span class="dash-chip bg-amber-100 text-amber-700">🟡 Nhẹ / theo dõi</span>';
+            const cellTd = (n, label, where) => n
+                ? `<td class="c" style="background:${heat(n)};color:${heat(n) === DASH_HEAT_[DASH_HEAT_.length - 1] ? '#fff' : '#7c2d12'}" title="${esc(where)} — ${esc(label)}: ${n} cảnh báo">${n}</td>`
+                : '<td class="c text-slate-300">·</td>';
+            let body = '';
+            [...tree.keys()].sort((a, b) => a.localeCompare(b, 'vi')).forEach(tinh => {
+                const xas = tree.get(tinh), all = [...xas.values()].flat(), st = sumTypes(all);
+                body += `<tr class="grp"><td>📍 ${esc(tinh)} <span class="text-slate-400 normal-case font-bold">· ${all.length} vùng</span></td><td></td>` + types.map(p => `<td class="c">${st[p[0]] || ''}</td>`).join('') + '</tr>';
+                [...xas.keys()].sort((a, b) => a.localeCompare(b, 'vi')).forEach(xa => {
+                    const list = xas.get(xa);
+                    if (xas.size > 1 || xa !== 'Chưa rõ xã') body += `<tr class="grp2"><td colspan="${2 + types.length}">${esc(xa)}</td></tr>`;
+                    list.sort((a, b) => b.sev - a.sev || a.name.localeCompare(b.name, 'vi')).forEach(c => {
+                        body += `<tr><td class="font-bold whitespace-nowrap" title="${esc(c.notes.join(' | '))}">${esc(c.name)}<div class="text-[10px] text-slate-400 font-semibold">${esc([...c.src].join(' + '))}</div></td><td>${sevChip(c.sev)}</td>` +
+                            types.map(p => cellTd(c.types[p[0]] || 0, p[1], c.name)).join('') + '</tr>';
+                    });
+                });
+            });
+            const nRed = [...cells.values()].filter(c => c.sev >= 3).length;
+            const chips = types.length ? '<div class="flex flex-wrap gap-2 mt-4">' + types.slice().sort((a, b) => typeTotal[b[0]] - typeTotal[a[0]])
+                .map(p => `<span class="dash-chip bg-orange-50 text-orange-900 border border-orange-200" style="font-size:11px;padding:.3rem .7rem">${esc(p[1])}: <b>${typeTotal[p[0]]}</b></span>`).join('') + '</div>' : '';
+            const kpis = '<div class="dash-kpis">' +
+                dashKpi_('🐛 Vùng có cảnh báo', dashFmt_(cells.size, 0) + '<small>vùng</small>', 'trên ' + [...idx.values()].filter(p => dashInScope_(p.name, p.province)).length + ' vùng trồng') +
+                dashKpi_('🔴 Mức nặng', dashFmt_(nRed, 0) + '<small>vùng</small>', 'cần cán bộ xuống vườn ngay') +
+                dashKpi_('Tổng lượt cảnh báo', dashFmt_(Object.values(typeTotal).reduce((s, n) => s + n, 0), 0), types.length + ' loại sâu bệnh đang ghi nhận') + '</div>';
+            const legend = `<div class="dash-legend"><span>Số lượt cảnh báo:</span>` + DASH_HEAT_.map((c, i) => `<span><i style="background:${c};border:1px solid #fed7aa"></i>${i === 0 ? 'ít' : i === DASH_HEAT_.length - 1 ? 'nhiều nhất (' + maxN + ')' : ''}</span>`).join('') + '</div>';
+            const table = cells.size ? `<div class="dash-scroll" style="max-height:30rem"><table class="dash-table dash-heat"><thead><tr><th>Tỉnh / Xã / Mã PUC</th><th>Mức cao nhất</th>` +
+                types.map(p => `<th class="num" style="text-align:center">${esc(p[1])}</th>`).join('') + `</tr></thead><tbody>${body}</tbody></table></div>` + legend
+                : '<div class="dash-empty mt-4">✅ Không có cảnh báo sâu bệnh đang hoạt động.</div>';
+            return dashSection_(4, 'Bản đồ nhiệt rủi ro &amp; sâu bệnh',
+                'Đang hoạt động = đánh giá Risk_Assessment mới nhất của mỗi vùng (cột Dịch bệnh khác "Không") + cảnh báo sâu bệnh trên task chưa xong hoặc xong trong ' + DASH_ACTIVE_DAYS_ + ' ngày qua. Di chuột / chạm ô để xem chi tiết.',
+                kpis + chips + table);
+        }
+
         function openOverlay(id) {
+            // 3.0.4: Dashboard điều hành chỉ cho Cán bộ kỹ thuật & Quản trị (Xã viên không thấy nút; chặn thêm khi gọi thẳng)
+            if (id === 'chart' && !hasRole_('ENGINEER')) {
+                if (!getAccessCode()) openLoginModal('Đăng nhập tài khoản Cán bộ kỹ thuật hoặc Quản trị để xem Dashboard.');
+                else showToast('Dashboard điều hành chỉ dành cho Cán bộ kỹ thuật và Quản trị.', 'warn');
+                return;
+            }
             closeAllOverlays();
             document.getElementById('overlay-' + id).style.display = 'flex';
+            if (id === 'chart') renderDashboard_();
             if (id === 'activity') switchActivityTab(activityTab); // mở lại đúng phân hệ đang xem dở lần trước
         }
 

@@ -1525,6 +1525,9 @@
         // khớp CHẮC CHẮN người gửi 1 ảnh chụp màn hình Zalo tới đúng 1 hộ, thay vì chỉ dò tên mờ.
         let zaloMapHeaders = [];
         let zaloMapData = [];
+        // Khung nhìn mặc định khi mở trang: trọn vùng trồng của HTX (Tiền Giang -> Đắk Lắk -> Gia Lai).
+        // Tải dữ liệu xong, bản đồ tự căn lại 1 lần theo đúng các vườn có toạ độ hợp lệ (fitToFarms_).
+        const HTX_DEFAULT_BOUNDS_ = [[10.30, 106.10], [14.05, 108.45]];
         // rotate/rotateControl/touchRotate/bearing: xoay bản đồ kiểu Google Maps — kéo la bàn
         // góc trên-phải, hoặc xoay 2 ngón tay trên màn cảm ứng. Nếu thư viện leaflet-rotate ở
         // <head> không tải được (không có mạng), Leaflet bỏ qua các tuỳ chọn lạ này một cách
@@ -1535,7 +1538,7 @@
             rotateControl: { position: 'topright', closeOnZeroBearing: false },
             touchRotate: true,
             bearing: 0
-        }).setView([12.65, 108.2], 8);
+        }).fitBounds(HTX_DEFAULT_BOUNDS_);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
         let markers = L.layerGroup().addTo(map); // 2.2.9: đổi sang markerClusterGroup khi thư viện tải xong (initMarkerLayer_)
         let boundaryLayers = L.layerGroup().addTo(map); // ranh giới (đa giác) các vùng trồng, vẽ từ toạ độ hội viên
@@ -2647,6 +2650,39 @@
             applyKnowledgeData(data.knowledge); // tab "Kho_Kien_Thuc" — tuỳ chọn
             applyZaloMapData(data.zaloMap); // tab "Zalo_Mapping" — tuỳ chọn
             renderAll();
+            fitToFarms_();
+        }
+
+        // Lần tải dữ liệu ĐẦU TIÊN của trang: căn bản đồ vừa khít mọi vườn có toạ độ hợp lệ (đã lọc rác
+        // ở parseCoords). Các lần tự đồng bộ sau (ping 120 s) không căn lại để khỏi giật khung đang xem.
+        let initialFitDone_ = false;
+        function fitToFarms_() {
+            if (initialFitDone_ || soloFocusItem) return;
+            const pts = farmData.map(parseCoords).filter(Boolean).map(c => [c.lat, c.lng]);
+            if (!pts.length) return;
+            initialFitDone_ = true;
+            map.fitBounds(L.latLngBounds(pts), Object.assign({ maxZoom: 13, animate: false }, overlayPadding_()));
+        }
+        // Chừa lề cho các khối nổi đè lên bản đồ (thanh menu trái, header + thẻ KPI, khung AI bên phải)
+        // để không cụm điểm nào bị che khi căn khung.
+        function overlayPadding_() {
+            const box = sel => {
+                const el = document.querySelector(sel);
+                if (!el) return null;
+                const cs = getComputedStyle(el);
+                if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return null;
+                const r = el.getBoundingClientRect();
+                return r.width && r.height ? r : null;
+            };
+            const W = window.innerWidth, H = window.innerHeight;
+            const aside = box('body > aside'), header = box('body > header'), chat = box('#ai-chat');
+            let left = aside && aside.right < W / 2 ? aside.right + 16 : 24;
+            let top = header && header.bottom < H / 2 ? header.bottom + 16 : 24;
+            let right = chat && chat.left > W / 2 ? W - chat.left + 16 : 24;
+            // Màn hẹp (điện thoại): lề lớn quá thì bỏ bớt, ưu tiên còn chỗ cho bản đồ
+            if (left + right > W * 0.6) { left = 24; right = 24; }
+            if (top > H * 0.4) top = 24;
+            return { paddingTopLeft: [left, top], paddingBottomRight: [right, 24] };
         }
 
         // Dựng taskData từ khối "tasks" trong cùng 1 lần gọi API — GIỐNG HỆT cách applySheetData()
@@ -2782,14 +2818,30 @@
         // ==========================================================================
         // TIỆN ÍCH ĐỌC / TÍNH TOÁN DỮ LIỆU
         // ==========================================================================
+        // Khung Việt Nam (đất liền + ven biển). Toạ độ ngoài khung = rác (0,0, gõ nhầm, số bị Sheet đổi
+        // định dạng...) -> bỏ qua, không vẽ, không kéo lệch khung nhìn của bản đồ.
+        const VN_BOUNDS_ = { latMin: 8.0, latMax: 23.5, lngMin: 102.0, lngMax: 110.0 };
+        function inVietnam_(lat, lng) {
+            return lat >= VN_BOUNDS_.latMin && lat <= VN_BOUNDS_.latMax && lng >= VN_BOUNDS_.lngMin && lng <= VN_BOUNDS_.lngMax;
+        }
+        // Đọc 1 cặp "lat, lng" từ chữ. Chấp nhận dấu thập phân . hoặc , ("10,3649; 106,1962"), ngăn
+        // cách bằng , ; hoặc khoảng trắng. Đảo lng/lat (gõ ngược) thì tự đổi lại. Không chắc chắn -> null.
+        function parseLatLngText_(raw) {
+            const s = (raw === null || raw === undefined ? '' : String(raw)).trim();
+            if (!s) return null;
+            const nums = s.match(/-?\d+(?:[.,]\d+)?/g);
+            if (!nums || nums.length !== 2) return null;
+            const a = Number(nums[0].replace(',', '.')), b = Number(nums[1].replace(',', '.'));
+            if (!isFinite(a) || !isFinite(b)) return null;
+            if (inVietnam_(a, b)) return { lat: a, lng: b };
+            if (inVietnam_(b, a)) return { lat: b, lng: a };
+            return null;
+        }
         // Toạ độ nằm ở cột "Định vị" dạng "12.654451, 108.340349"
         function parseCoords(row) {
             const key = CONFIG.FIELDS.coords;
             if (!key) return null;
-            const raw = (row[key] || "").toString();
-            const parts = raw.split(',').map(s => parseFloat(s.trim()));
-            if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) return { lat: parts[0], lng: parts[1] };
-            return null;
+            return parseLatLngText_(row[key]);
         }
 
         // Toạ độ CÁC GÓC vườn riêng của 1 hội viên, nằm ở cột tuỳ chọn (vd "Toạ độ góc vườn"),
@@ -2800,10 +2852,7 @@
             if (!key) return [];
             const raw = (row[key] || '').toString().trim();
             if (!raw) return [];
-            return raw.split(/[;\n]+/).map(s => s.trim()).filter(Boolean).map(pair => {
-                const parts = pair.split(',').map(s => parseFloat(s.trim()));
-                return (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) ? { lat: parts[0], lng: parts[1] } : null;
-            }).filter(Boolean);
+            return raw.split(/[;\n]+/).map(s => s.trim()).filter(Boolean).map(parseLatLngText_).filter(Boolean);
         }
 
         // Tách tên Xã/Phường/Thị trấn ra từ cột "Địa chỉ mới"
@@ -5748,6 +5797,12 @@ Tiếp tục?`;
             document.getElementById('f-yield-est').value = get(F.yieldEst);
             document.getElementById('f-lat').value = c.lat;
             document.getElementById('f-lng').value = c.lng;
+            // Nhớ giá trị gốc: không sửa ô toạ độ thì lưu lại nguyên văn ô "Định vị" (kể cả khi
+            // parseCoords bỏ qua vì rác/ngoài VN) — tránh sửa tên/SĐT mà lỡ xoá mất toạ độ cũ.
+            const form = document.getElementById('record-form');
+            form.dataset.origLat = String(c.lat);
+            form.dataset.origLng = String(c.lng);
+            form.dataset.origCoords = String(get(F.coords) || '');
             document.getElementById('f-status').value = get(F.status);
             document.getElementById('f-photo').value = get(F.photo);
             setSelectValue_('f-slope', get(F.slope));
@@ -5809,8 +5864,15 @@ Tiếp tục?`;
             // Độ dốc / loại đất: ghi vào cột Do_Doc / Loai_Dat (migration 2.2.0 đã thêm cột vào tab Data)
             record[F.slope || 'Do_Doc'] = document.getElementById('f-slope').value.trim();
             record[F.soil || 'Loai_Dat'] = document.getElementById('f-soil').value.trim();
-            if (F.coords) record[F.coords] = (lat && lng) ? (lat + ', ' + lng) : '';
             const idxStr = document.getElementById('form-index').value;
+            const ds = document.getElementById('record-form').dataset;
+            const coordsUntouched = idxStr !== '' && lat === ds.origLat && lng === ds.origLng;
+            const typed = (lat || lng) ? parseLatLngText_(lat + ', ' + lng) : null; // gõ ngược lat/lng -> tự đổi lại
+            if (!coordsUntouched && (lat || lng) && !typed) {
+                showToast('Toạ độ không hợp lệ — cần đủ Vĩ độ và Kinh độ, nằm trong Việt Nam (vĩ độ 8–23.5, kinh độ 102–110).', 'error');
+                return;
+            }
+            if (F.coords) record[F.coords] = coordsUntouched ? ds.origCoords : (typed ? (typed.lat + ', ' + typed.lng) : '');
             if (idxStr === '') createRecord(record); else updateRecord(parseInt(idxStr, 10), record);
             closeForm();
         }

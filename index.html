@@ -161,7 +161,7 @@
         .risk-filter-chip { opacity: .55; transition: all .15s; border: 2px solid transparent; }
         .risk-filter-chip:hover { opacity: .85; }
         .risk-filter-chip.risk-filter-chip-active { opacity: 1; border-color: currentColor; transform: scale(1.05); }
-        /* Accordion gallery ảnh Link_Anh_1..4 trong thẻ "Nhật ký công việc" / "Cảnh báo sâu bệnh". */
+        /* Accordion gallery ảnh: ảnh đại diện vườn (Link_Anh_1..4, tab Nông học) và ảnh từng công việc / sâu bệnh (Field_Tasks). */
         .photo-gallery-toggle { cursor: pointer; user-select: none; }
         .photo-gallery-body { display: none; }
         .photo-gallery-body.open { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
@@ -470,8 +470,9 @@
                 </div>
                 <button onclick="openWeather(currentProfileHousehold)" class="w-full flex items-center justify-center gap-2 bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold text-[11px] uppercase px-4 py-3 rounded-2xl">🌦️ Thời tiết &amp; cảnh báo cho vườn này</button>
                 <!-- Gallery ảnh thực địa CẤP HỘ (Link_Anh_1..4) — hiện ở đây LUÔN, không phụ thuộc hộ có
-                     công việc/cảnh báo nào trong Field_Tasks hay không (khác 2 tab bên cạnh, nơi gallery
-                     nằm trong TỪNG thẻ công việc). Đổ nội dung trong showProfile() qua buildPhotoGalleryHtml_(). -->
+                     công việc/cảnh báo nào trong Field_Tasks hay không. 2 tab bên cạnh KHÔNG dùng 4 ảnh này:
+                     mỗi thẻ công việc / sâu bệnh hiện ảnh của chính dòng Field_Tasks đó (3.0.1).
+                     Đổ nội dung trong showProfile() qua buildPhotoGalleryHtml_(). -->
                 <div id="p-agro-gallery"></div>
             </div>
             <!-- Nhật ký công việc: các dòng trong tab "Field_Tasks" khớp đúng Mã PUC của hội viên này -->
@@ -702,7 +703,6 @@
                         </select>
                         <button onclick="clearTaskFilters()" class="px-3 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-[10px] font-black uppercase text-slate-500">Xoá lọc</button>
                         <button onclick="openTaskPlanner()" class="ml-auto flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] uppercase px-4 py-2.5 rounded-full">📅 Lịch canh tác chuẩn theo tỉnh (21 task)</button>
-                        <input type="file" id="task-row-photo-input" accept="image/*" capture="environment" multiple class="hidden" onchange="onTaskRowPhotoPick(event)">
                     </div>
                     <div id="task-summary" class="px-8 pt-3"></div>
                     <div class="flex-1 overflow-y-auto p-8 pb-3">
@@ -973,6 +973,7 @@
                             <div class="flex flex-col items-end gap-1">
                                 <input type="file" id="lib-ho-file-input" class="hidden" multiple onchange="uploadLibraryFile(event, 'household')">
                                 <button id="lib-ho-upload-btn" onclick="document.getElementById('lib-ho-file-input').click()" class="lib-upload-btn flex items-center gap-2 font-black text-xs uppercase px-6 py-3.5 rounded-full transition-colors">📤 Tải tài liệu / hình ảnh lên</button>
+                                <button onclick="openPhotoPickerFromLibrary_()" title="Ảnh gắn vào đúng công việc / cảnh báo sâu bệnh (tab Field_Tasks) của vùng trồng hộ này" class="need-eng flex items-center gap-2 font-black text-[10px] uppercase px-5 py-2.5 rounded-full bg-sky-600 hover:bg-sky-700 text-white">📷 Ảnh thực địa theo công việc</button>
                                 <span id="lib-ho-upload-status" class="text-xs text-slate-500"></span>
                             </div>
                         </div>
@@ -1118,15 +1119,20 @@
                     <div data-tf="supplies" class="col-span-2"><label class="form-label">Vật tư / hoạt chất khuyến cáo</label><input id="tf-supplies" class="form-input"></div>
                     <div data-tf="used" class="col-span-2"><label class="form-label">Vật tư / phân thuốc THỰC TẾ đã dùng</label><input id="tf-used" oninput="updateTaskFormWarnings()" class="form-input" placeholder="K2SO4 0.5kg/gốc"></div>
                     <div class="col-span-2"><label class="form-label">Cảnh báo sâu bệnh</label><input id="tf-pest" oninput="updateTaskFormWarnings()" class="form-input" placeholder="Rầy xanh ăn lá non"></div>
+                    <div class="col-span-2 bg-red-50 rounded-2xl p-4">
+                        <div class="flex items-center justify-between gap-3 flex-wrap">
+                            <label class="form-label !mb-0">🐛 Ảnh cảnh báo sâu bệnh (tối đa 6)</label>
+                            <button type="button" id="tf-pest-photo-btn" onclick="openPhotoPickerFromTaskForm_('pest')" class="need-eng px-4 py-2 rounded-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-[10px] uppercase">Chụp / tải ảnh</button>
+                        </div>
+                        <div id="tf-pest-photos" class="mt-2 flex flex-wrap gap-2"></div>
+                    </div>
                     <div class="col-span-2"><label class="form-label">Ghi chú của kỹ sư thực địa</label><textarea id="tf-note" rows="3" oninput="updateTaskFormWarnings()" class="form-input"></textarea></div>
                     <div id="tf-warnings" class="col-span-2 space-y-2"></div>
-                    <div data-tf="photos" class="col-span-2 bg-sky-50 rounded-2xl p-4">
+                    <div class="col-span-2 bg-sky-50 rounded-2xl p-4">
                         <div class="flex items-center justify-between gap-3 flex-wrap">
-                            <label class="form-label !mb-0">📷 Ảnh xác nhận thực địa (tối đa 6)</label>
-                            <input type="file" id="tf-photo-input" accept="image/*" capture="environment" multiple class="hidden" onchange="(e => { const f = Array.from(e.target.files || []); e.target.value = ''; if (f.length) uploadTaskPhotos_(parseInt(document.getElementById('task-form-index').value, 10), f, document.getElementById('tf-photo-status')); })(event)">
-                            <button type="button" id="tf-photo-btn" onclick="document.getElementById('tf-photo-input').click()" class="px-4 py-2 rounded-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-bold text-[10px] uppercase">Chụp / tải ảnh</button>
+                            <label class="form-label !mb-0">📷 Ảnh xác nhận công việc (tối đa 6)</label>
+                            <button type="button" id="tf-photo-btn" onclick="openPhotoPickerFromTaskForm_('task')" class="need-eng px-4 py-2 rounded-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-bold text-[10px] uppercase">Chụp / tải ảnh</button>
                         </div>
-                        <span id="tf-photo-status" class="text-[11px] text-slate-500"></span>
                         <div id="tf-photos" class="mt-2 flex flex-wrap gap-2"></div>
                     </div>
                 </div>
@@ -1143,6 +1149,47 @@
     </div>
 
     <!-- 2.2.3: LỊCH CANH TÁC CHUẨN 21 TASK THEO TỈNH (lịch truy ngược + tạo lịch cho vườn) -->
+    <!-- 3.0.1: Popup "Chụp / tải ảnh" — chọn đúng Vùng trồng / Giai đoạn / Công việc / Loại ảnh trước khi tải.
+         Nằm trên các popup khác (z-index 120) vì được mở từ form công việc, Hồ sơ hộ, Thư viện số. -->
+    <div id="overlay-photo-picker" class="overlay-screen" style="z-index:120">
+        <div class="bg-white w-full max-w-xl mx-auto h-fit max-h-full my-auto rounded-[3rem] flex flex-col overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center">
+                <h2 class="text-lg font-black uppercase">📷 Chụp / tải ảnh thực địa</h2>
+                <button onclick="closePhotoPicker_()" class="p-3 bg-slate-200 rounded-full"><i data-lucide="x"></i></button>
+            </div>
+            <div class="p-6 space-y-4 overflow-y-auto">
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="col-span-2 sm:col-span-1"><span class="form-label">Vùng trồng (Mã PUC)</span>
+                        <select id="pp-puc" class="form-input" onchange="onPhotoPickerChange_('puc', this.value)"></select></label>
+                    <label class="col-span-2 sm:col-span-1"><span class="form-label">Giai đoạn canh tác</span>
+                        <select id="pp-stage" class="form-input" onchange="onPhotoPickerChange_('stage', this.value)"></select></label>
+                    <label class="col-span-2"><span class="form-label">Công việc (21 task)</span>
+                        <select id="pp-task" class="form-input" onchange="onPhotoPickerChange_('taskId', this.value)"></select></label>
+                </div>
+                <div class="space-y-2">
+                    <span class="form-label">Loại ảnh</span>
+                    <label class="flex items-start gap-2 text-sm cursor-pointer"><input type="radio" name="pp-kind" value="task" class="mt-1" onchange="onPhotoPickerChange_('kind', 'task')">
+                        <span><b>📷 Ảnh xác nhận công việc</b> <span class="text-slate-400 text-xs">— đã làm xong / đang làm</span></span></label>
+                    <label class="flex items-start gap-2 text-sm cursor-pointer"><input type="radio" name="pp-kind" value="pest" class="mt-1" onchange="onPhotoPickerChange_('kind', 'pest')">
+                        <span><b>🐛 Ảnh cảnh báo sâu bệnh</b> <span id="pp-pest-text" class="text-red-600 text-xs"></span></span></label>
+                </div>
+                <div class="rounded-2xl bg-slate-50 p-3">
+                    <p class="text-[10px] font-black uppercase text-slate-500">Lưu vào Google Drive</p>
+                    <p id="pp-path" class="text-[11px] font-mono text-slate-600 break-all"></p>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <p id="pp-count" class="text-xs font-black text-slate-700"></p>
+                        <input type="file" id="pp-file-input" accept="image/*" capture="environment" multiple class="hidden" onchange="onPhotoPickerFiles_(event)">
+                        <button type="button" id="pp-upload-btn" onclick="document.getElementById('pp-file-input').click()" class="px-5 py-2.5 rounded-full bg-sky-600 hover:bg-sky-700 disabled:opacity-50 text-white font-black text-[10px] uppercase">Chụp / tải ảnh</button>
+                    </div>
+                    <p id="pp-status" class="text-[11px] text-slate-500 mt-1"></p>
+                    <div id="pp-photos" class="mt-2 flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="overlay-task-planner" class="overlay-screen">
         <div class="bg-white w-full max-w-6xl mx-auto h-full rounded-[3rem] flex flex-col overflow-hidden">
             <div class="p-8 pb-4 border-b space-y-4">
@@ -1491,7 +1538,7 @@
             FIELDS: {},
 
             // Phiên bản giao diện — so với "version" máy chủ trả về để cảnh báo khi link /exec còn chạy bản cũ.
-            APP_VERSION: "3.0.0"
+            APP_VERSION: "3.0.1"
         };
 
         // Tên cột thật trên tab "Data" sẽ được nạp vào đây sau khi gọi API lần đầu.
@@ -2455,7 +2502,7 @@
                 end: has('ngay ket thuc'),
                 status: has('trang thai'),
                 percent: has('tien do'),
-                pest: has('canh bao sau benh') || has('sau benh'),
+                pest: has('canh bao sau benh') || headers[normed.findIndex(h => h.includes('sau benh') && !h.includes('link'))] || null,
                 note: has('ghi chu thuc dia') || has('ghi chu'),
                 // 2.2.3 — cột ma trận 21 task (null nếu tab chưa có cột: form tự ẩn ô tương ứng)
                 qt: has('ma quy trinh'),
@@ -2465,7 +2512,8 @@
                 phi: has('phi ngay') || (normed.indexOf('phi') !== -1 ? headers[normed.indexOf('phi')] : null),
                 doneDate: has('ngay thuc hien'),
                 used: has('vat tu da dung'),
-                photos: has('link anh xac nhan')
+                photos: has('link anh xac nhan'),
+                pestPhotos: has('link anh sau benh') // 3.0.1 — ảnh cảnh báo sâu bệnh của task
             };
         }
 
@@ -3028,9 +3076,14 @@
             const hm = findHouseholdForRow_(item[TF.ho], (item[TF.puc] || '').trim());
             return hm && F.province ? String(hm.item[F.province] || '').trim() : '';
         }
-        function taskPhotoLinks_(item) {
-            const TF = CONFIG.TASK_FIELDS;
-            return TF.photos ? String(item[TF.photos] || '').split(/[\s,;]+/).map(s => s.trim()).filter(Boolean) : [];
+        const TASK_PHOTO_KIND_UI_ = {
+            task: { field: 'photos', col: 'Link_Anh_Xac_Nhan', label: 'Ảnh xác nhận công việc', icon: '📷', sub: '' },
+            pest: { field: 'pestPhotos', col: 'Link_Anh_Sau_Benh', label: 'Ảnh cảnh báo sâu bệnh', icon: '🐛', sub: 'Sau_Benh' }
+        };
+        const TASK_PHOTO_MAX_UI_ = 6; // = TASK_PHOTO_MAX phía máy chủ, mỗi loại ảnh / task
+        function taskPhotoLinks_(item, kind) {
+            const col = taskPhotoCol_(kind || 'task');
+            return col && item ? String(item[col] || '').split(/[\s,;]+/).map(s => s.trim()).filter(Boolean) : [];
         }
         function stripAutoTag_(s) { return String(s || '').replace(/^\[TỰ ĐỘNG[^\]]*\]\s*/, '').trim(); }
 
@@ -3295,73 +3348,216 @@
                 img.src = url;
             });
         }
-        async function uploadTaskPhotos_(idx, files, statusEl) {
-            const TF = CONFIG.TASK_FIELDS;
+        // ---- 3.0.1 ẢNH THỰC ĐỊA THEO TỪNG CÔNG VIỆC ----
+        // Ảnh của task / cảnh báo sâu bệnh đọc từ ĐÚNG dòng Field_Tasks (không dùng 4 ảnh hộ Link_Anh_1..4
+        // của tab Data — 4 ảnh đó chỉ là ảnh đại diện vườn ở tab Nông học). 2 loại, mỗi loại 1 cột:
+        //   'task' = ảnh xác nhận đã làm (Link_Anh_Xac_Nhan), 'pest' = ảnh cảnh báo sâu bệnh (Link_Anh_Sau_Benh).
+        // Máy chủ lưu Drive: SMARTAGRI_KHO_THU_VIEN_SO/{Tỉnh}/{Mã PUC}/{Giai đoạn}/{Task_ID}_{Tên}/[Sau_Benh/]
+        function taskPhotoCol_(kind) { return CONFIG.TASK_FIELDS[(TASK_PHOTO_KIND_UI_[kind] || TASK_PHOTO_KIND_UI_.task).field] || null; }
+
+        // Ghi danh sách link máy chủ trả về vào đúng task trong taskData rồi vẽ lại MỌI chỗ đang hiện
+        // ảnh task đó (bảng công việc, form sửa, hồ sơ hộ, popup tải ảnh) — không chờ tải lại dữ liệu.
+        function applyTaskPhotoLinks_(item, kind, res) {
+            const K = TASK_PHOTO_KIND_UI_[kind];
+            const col = res.column || K.col;
+            if (!CONFIG.TASK_FIELDS[K.field]) { // cột vừa được máy chủ tạo (vd Link_Anh_Sau_Benh lần đầu)
+                CONFIG.TASK_FIELDS[K.field] = col;
+                if (Array.isArray(taskHeaders) && !taskHeaders.includes(col)) taskHeaders.push(col);
+            }
+            item[col] = (res.links || []).join('\n');
+            refreshTaskPhotoViews_();
+        }
+        function refreshTaskPhotoViews_() {
+            renderTasks();
+            renderTaskFormPhotos_();
+            if (currentProfileHousehold) {
+                // giữ các khung ảnh đang mở trong hồ sơ (id theo mã task nên vẽ lại vẫn khớp)
+                const open = [...document.querySelectorAll('#content-pest .photo-gallery-body.open, #content-doc .photo-gallery-body.open')].map(el => el.id);
+                renderProfileTasks(currentProfileHousehold);
+                open.forEach(id => { if (document.getElementById(id)) toggleGallery(id); });
+            }
+            renderPhotoPicker_();
+        }
+
+        async function uploadTaskPhotos_(idx, files, statusEl, kind) {
+            kind = kind === 'pest' ? 'pest' : 'task';
+            const K = TASK_PHOTO_KIND_UI_[kind];
             const item = taskData[idx];
-            if (!item || !item._id) { showToast('Lưu công việc trước rồi mới tải ảnh được', 'error'); return; }
-            if (!TF.photos) { showToast('Tab Field_Tasks chưa có cột Link_Anh_Xac_Nhan — cần máy chủ bản 2.2.3', 'error'); return; }
-            let okN = 0;
+            if (!item || !item._id) { showToast('Lưu công việc trước rồi mới tải ảnh được', 'error'); return 0; }
+            let okN = 0, lastPath = '';
             for (const file of files) {
-                if (statusEl) statusEl.textContent = '⏳ Đang tải "' + file.name + '"...';
+                if (statusEl) statusEl.textContent = '⏳ Đang tải "' + file.name + '" (' + (okN + 1) + '/' + files.length + ')...';
                 try {
                     const small = await compressImage_(file);
                     const base64 = small || await readFileBase64_(file);
-                    const res = await apiCall('uploadTaskPhoto', { taskId: item._id, fileName: small ? file.name.replace(/\.\w+$/, '') + '.jpg' : file.name, mimeType: small ? 'image/jpeg' : file.type, base64Data: base64 }, 'drive');
-                    item[TF.photos] = (res.links || []).join('\n');
+                    const res = await apiCall('uploadTaskPhoto', { taskId: item._id, kind, fileName: small ? file.name.replace(/\.\w+$/, '') + '.jpg' : file.name, mimeType: small ? 'image/jpeg' : file.type, base64Data: base64 }, 'drive');
+                    applyTaskPhotoLinks_(item, kind, res);
+                    if (res.path) lastPath = res.path;
+                    (res.warnings || []).forEach(w => showToast(w, 'warn'));
                     okN++;
                 } catch (err) {
                     showToast('Ảnh "' + file.name + '": ' + err.message, 'error');
                     if (err.code === 'TOO_MANY' || err.code === 'NETWORK') break;
                 }
             }
-            if (statusEl) statusEl.textContent = okN ? '✅ Đã tải ' + okN + ' ảnh' : '';
-            if (okN) showToast('Đã lưu ' + okN + ' ảnh xác nhận cho ' + item._id, 'success');
-            renderTasks();
-            renderTaskFormPhotos_();
+            if (statusEl) statusEl.innerHTML = okN ? '✅ Đã tải ' + okN + ' ảnh' + (lastPath ? ' vào <span class="font-mono break-all">' + esc(lastPath) + '</span>' : '') : '';
+            if (okN) showToast('Đã lưu ' + okN + ' ' + K.label.toLowerCase() + ' cho ' + item._id, 'success');
+            return okN;
         }
-        function onTaskRowPhotoPick(evt) {
-            const input = evt.target;
-            const files = Array.from(input.files || []);
-            const idx = parseInt(input.dataset.idx, 10);
-            input.value = '';
-            if (files.length) uploadTaskPhotos_(idx, files, null);
-        }
-        async function deleteTaskPhoto_(idx, url) {
-            const TF = CONFIG.TASK_FIELDS;
+        async function deleteTaskPhoto_(idx, url, kind) {
+            kind = kind === 'pest' ? 'pest' : 'task';
             const item = taskData[idx];
             const fileId = extractDriveFileId_(url);
-            if (!item || !fileId || !confirm('Xóa ảnh xác nhận này? (ảnh vào Thùng rác Drive, khôi phục được 30 ngày)')) return;
+            if (!item || !fileId || !confirm('Xóa ảnh này? (ảnh vào Thùng rác Drive, khôi phục được 30 ngày)')) return;
             try {
-                const res = await apiCall('deleteTaskPhoto', { taskId: item._id, fileId }, 'drive');
-                item[TF.photos] = (res.links || []).join('\n');
-                renderTasks();
-                renderTaskFormPhotos_();
+                const res = await apiCall('deleteTaskPhoto', { taskId: item._id, kind, fileId }, 'drive');
+                applyTaskPhotoLinks_(item, kind, res);
             } catch (err) { showToast('Không xóa được ảnh: ' + err.message, 'error'); }
         }
-        function taskPhotoThumbs_(links, idx, removable) {
-            return links.map(u => `<span class="relative inline-block">
+        function taskPhotoThumbs_(links, idx, removable, kind) {
+            return links.map(u => `<span class="relative inline-block w-16">
                 <img src="${esc(driveDirectImageUrl_(u))}" data-file-id="${esc(extractDriveFileId_(u))}" data-fallback-stage="0" class="photo-gallery-thumb" loading="lazy" onclick="openPhotoModal(this.src)" onerror="photoImgFallback_(this)">
-                ${removable ? `<button type="button" data-del-photo="${esc(u)}" data-idx="${idx}" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] leading-5 text-center" title="Xóa ảnh">×</button>` : ''}</span>`).join('');
+                ${removable ? `<button type="button" data-del-photo="${esc(u)}" data-idx="${idx}" data-kind="${kind || 'task'}" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] leading-5 text-center" title="Xóa ảnh">×</button>` : ''}</span>`).join('');
         }
         function renderTaskFormPhotos_() {
-            const box = document.getElementById('tf-photos');
-            if (!box) return;
             const idxStr = document.getElementById('task-form-index').value;
             const item = idxStr === '' ? null : taskData[parseInt(idxStr, 10)];
-            const btn = document.getElementById('tf-photo-btn');
-            if (!item || !item._id) {
-                box.innerHTML = '<p class="text-[11px] text-slate-400 italic">Bấm "Lưu công việc" trước, sau đó mở lại (✏️) để chụp/tải ảnh xác nhận.</p>';
-                if (btn) btn.disabled = true;
-                return;
-            }
-            if (btn) btn.disabled = false;
-            const links = taskPhotoLinks_(item);
-            box.innerHTML = links.length ? taskPhotoThumbs_(links, idxStr, true) : '<p class="text-[11px] text-slate-400 italic">Chưa có ảnh xác nhận (tối đa 6 ảnh).</p>';
+            ['task', 'pest'].forEach(kind => {
+                const box = document.getElementById(kind === 'pest' ? 'tf-pest-photos' : 'tf-photos');
+                const btn = document.getElementById(kind === 'pest' ? 'tf-pest-photo-btn' : 'tf-photo-btn');
+                if (!box) return;
+                if (!item || !item._id) {
+                    box.innerHTML = '<p class="text-[11px] text-slate-400 italic">Bấm "Lưu công việc" trước, sau đó mở lại (✏️) để chụp/tải ảnh.</p>';
+                    if (btn) btn.disabled = true;
+                    return;
+                }
+                if (btn) btn.disabled = false;
+                const links = taskPhotoLinks_(item, kind);
+                box.innerHTML = links.length ? taskPhotoThumbs_(links, idxStr, true, kind)
+                    : '<p class="text-[11px] text-slate-400 italic">Chưa có ' + TASK_PHOTO_KIND_UI_[kind].label.toLowerCase() + ' (tối đa ' + TASK_PHOTO_MAX_UI_ + ').</p>';
+            });
+        }
+        function openPhotoPickerFromTaskForm_(kind) {
+            const idxStr = document.getElementById('task-form-index').value;
+            const item = idxStr === '' ? null : taskData[parseInt(idxStr, 10)];
+            if (item && item._id) openPhotoPicker_({ taskId: item._id, kind });
         }
         document.addEventListener('click', e => {
             const b = e.target.closest('button[data-del-photo]');
-            if (b) deleteTaskPhoto_(parseInt(b.dataset.idx, 10), b.dataset.delPhoto);
+            if (b) { deleteTaskPhoto_(parseInt(b.dataset.idx, 10), b.dataset.delPhoto, b.dataset.kind); return; }
+            // Nút "📷 Thêm ảnh" trong thẻ công việc / sâu bệnh ở Hồ sơ hộ
+            const p = e.target.closest('[data-pp-task]');
+            if (p) openPhotoPicker_({ taskId: p.dataset.ppTask, kind: p.dataset.ppKind });
         });
+
+        // ---- Popup "Chụp / tải ảnh": chọn Vùng trồng -> Giai đoạn -> Công việc -> Loại ảnh rồi mới tải ----
+        // Mở từ: form sửa công việc, nút 📷 trên bảng công việc, thẻ công việc / sâu bệnh ở Hồ sơ hộ, Thư viện số.
+        let photoPicker_ = null; // { puc, stage, taskId, kind }
+        function taskStageText_(t) {
+            const TF = CONFIG.TASK_FIELDS;
+            return String((TF.stage && t[TF.stage]) || '').trim() || '(Chưa ghi giai đoạn)';
+        }
+        function taskStartTime_(t) {
+            const TF = CONFIG.TASK_FIELDS;
+            const d = TF.start ? parseVNDate(t[TF.start]) : null;
+            return d ? d.getTime() : Infinity;
+        }
+        function openPhotoPicker_(opts) {
+            opts = opts || {};
+            const TF = CONFIG.TASK_FIELDS;
+            if (!hasRole_('ENGINEER')) { showToast('Cần tài khoản Cán bộ kỹ thuật trở lên để tải ảnh', 'error'); return; }
+            if (!TF.title || !taskData.some(t => t._id)) { showToast('Chưa có công việc nào trong tab Field_Tasks để gắn ảnh', 'error'); return; }
+            const t = opts.taskId ? taskData.find(x => x._id === opts.taskId) : null;
+            photoPicker_ = {
+                puc: t ? String(t[TF.puc] || '').trim() : String(opts.puc || '').trim(),
+                stage: t ? taskStageText_(t) : '',
+                taskId: t ? t._id : '',
+                kind: opts.kind === 'pest' ? 'pest' : 'task'
+            };
+            document.getElementById('pp-status').textContent = '';
+            document.getElementById('overlay-photo-picker').style.display = 'flex';
+            renderPhotoPicker_();
+        }
+        function closePhotoPicker_() {
+            document.getElementById('overlay-photo-picker').style.display = 'none';
+            photoPicker_ = null;
+        }
+        function onPhotoPickerChange_(field, value) {
+            if (!photoPicker_) return;
+            photoPicker_[field] = value;
+            if (field === 'puc') { photoPicker_.stage = ''; photoPicker_.taskId = ''; }
+            if (field === 'stage') photoPicker_.taskId = '';
+            document.getElementById('pp-status').textContent = '';
+            renderPhotoPicker_();
+        }
+        function photoPickerTask_() { return photoPicker_ && photoPicker_.taskId ? taskData.find(x => x._id === photoPicker_.taskId) || null : null; }
+        function renderPhotoPicker_() {
+            const P = photoPicker_;
+            if (!P) return;
+            const TF = CONFIG.TASK_FIELDS;
+            const withId = taskData.filter(t => t._id);
+            const pucs = [...new Set(withId.map(t => String(t[TF.puc] || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'vi'));
+            if (!pucs.includes(P.puc)) P.puc = pucs[0] || '';
+            const ofPuc = withId.filter(t => String(t[TF.puc] || '').trim() === P.puc);
+            // Giai đoạn xếp theo ngày bắt đầu sớm nhất của các việc trong giai đoạn đó
+            const firstStart = {};
+            ofPuc.forEach(t => { const s = taskStageText_(t); firstStart[s] = Math.min(firstStart[s] === undefined ? Infinity : firstStart[s], taskStartTime_(t)); });
+            const stages = Object.keys(firstStart).sort((a, b) => firstStart[a] - firstStart[b] || a.localeCompare(b, 'vi'));
+            if (!stages.includes(P.stage)) P.stage = stages[0] || '';
+            const tasks = ofPuc.filter(t => taskStageText_(t) === P.stage).sort((a, b) => taskStartTime_(a) - taskStartTime_(b));
+            if (!tasks.some(t => t._id === P.taskId)) P.taskId = tasks[0] ? tasks[0]._id : '';
+
+            const opt = (v, label, sel) => `<option value="${esc(v)}"${v === sel ? ' selected' : ''}>${esc(label)}</option>`;
+            document.getElementById('pp-puc').innerHTML = pucs.map(p => {
+                const tinh = taskProvince_(ofPucFirst_(withId, p));
+                return opt(p, p + (tinh ? ' · ' + tinh : ''), P.puc);
+            }).join('');
+            document.getElementById('pp-stage').innerHTML = stages.map(s => opt(s, s, P.stage)).join('');
+            document.getElementById('pp-task').innerHTML = tasks.map(t => opt(t._id,
+                t._id + ' · ' + (t[TF.title] || '') + ' (' + (t[TF.start] || '--') + ' → ' + (t[TF.end] || '--') + ')' + (TF.pest && String(t[TF.pest] || '').trim() ? ' 🐛' : ''), P.taskId)).join('');
+
+            const t = photoPickerTask_();
+            document.querySelectorAll('input[name="pp-kind"]').forEach(r => { r.checked = r.value === P.kind; });
+            const pestText = t && TF.pest ? String(t[TF.pest] || '').trim() : '';
+            document.getElementById('pp-pest-text').textContent = pestText ? '— ' + pestText : '— công việc này chưa ghi cảnh báo sâu bệnh';
+
+            const K = TASK_PHOTO_KIND_UI_[P.kind];
+            const links = t ? taskPhotoLinks_(t, P.kind) : [];
+            const tinh = t ? taskProvince_(t) : '';
+            const safe = s => String(s || '').replace(/[\\\/:*?"<>|#%]/g, '_').replace(/\s+/g, ' ').trim();
+            document.getElementById('pp-path').textContent = t
+                ? ['SMARTAGRI_KHO_THU_VIEN_SO', safe(tinh) || 'Chua_Ro_Tinh', safe(P.puc) || 'Chua_Ro_PUC', safe(t[TF.stage]) || 'Chua_Ro_Giai_Doan',
+                    (safe(t._id + (t[TF.title] ? '_' + t[TF.title] : '')).slice(0, 90))].concat(K.sub ? [K.sub] : []).join(' / ') + ' /'
+                : '—';
+            document.getElementById('pp-count').textContent = K.icon + ' ' + K.label + ' (' + links.length + '/' + TASK_PHOTO_MAX_UI_ + ')';
+            document.getElementById('pp-photos').innerHTML = links.length
+                ? taskPhotoThumbs_(links, taskData.indexOf(t), true, P.kind)
+                : '<p class="text-[11px] text-slate-400 italic">' + (t ? 'Chưa có ảnh nào cho mục này.' : 'Chọn công việc ở trên.') + '</p>';
+            const btn = document.getElementById('pp-upload-btn');
+            btn.disabled = !t || links.length >= TASK_PHOTO_MAX_UI_;
+            btn.title = t && links.length >= TASK_PHOTO_MAX_UI_ ? 'Đã đủ ' + TASK_PHOTO_MAX_UI_ + ' ảnh — xóa bớt ảnh cũ (Quản trị) trước' : '';
+        }
+        function ofPucFirst_(list, puc) {
+            const TF = CONFIG.TASK_FIELDS;
+            return list.find(t => String(t[TF.puc] || '').trim() === puc) || {};
+        }
+        async function onPhotoPickerFiles_(evt) {
+            const files = Array.from(evt.target.files || []);
+            evt.target.value = '';
+            const t = photoPickerTask_();
+            if (!files.length || !t) return;
+            const btn = document.getElementById('pp-upload-btn');
+            btn.disabled = true;
+            try { await uploadTaskPhotos_(taskData.indexOf(t), files, document.getElementById('pp-status'), photoPicker_.kind); }
+            finally { renderPhotoPicker_(); }
+        }
+        // Thư viện số (chế độ Hộ): mở popup với Mã vùng trồng của hộ đang chọn
+        function openPhotoPickerFromLibrary_() {
+            const F = CONFIG.FIELDS;
+            const ho = getLibrarySelectedHousehold_();
+            const item = ho && F.id ? farmData.find(i => String(i[F.id] || '').trim() === ho.maHo) : null;
+            openPhotoPicker_({ puc: item && F.puc ? item[F.puc] : '' });
+        }
 
         // ---- Form: chọn mẫu quy trình -> tự điền; cảnh báo trực tiếp khi gõ ----
         function fillTaskTemplateSelect_() {
@@ -4003,7 +4199,7 @@
                         <td class="p-4">
                             <div class="flex gap-2 flex-wrap max-w-[96px]">
                                 ${st.key !== 'done' ? '<button data-action="done" title="Đánh dấu đã xong (hôm nay)" class="action-btn bg-emerald-100 hover:bg-emerald-200 text-emerald-700">✅</button>' : ''}
-                                ${TF.photos ? `<button data-action="photo" title="Chụp / tải ảnh xác nhận" class="action-btn bg-sky-100 hover:bg-sky-200 text-sky-700">📷</button>` : ''}
+                                ${item._id ? `<button data-action="photo" title="Chụp / tải ảnh cho công việc này (${taskPhotoLinks_(item, 'task').length} ảnh xác nhận · ${taskPhotoLinks_(item, 'pest').length} ảnh sâu bệnh)" class="action-btn bg-sky-100 hover:bg-sky-200 text-sky-700">📷</button>` : ''}
                                 <button data-action="edit" title="Sửa" class="action-btn bg-amber-100 hover:bg-amber-200 text-amber-700">✏️</button>
                                 <button data-action="delete" title="Xóa" class="action-btn bg-red-100 hover:bg-red-200 text-red-700">🗑️</button>
                             </div>
@@ -4029,11 +4225,7 @@
             if (btn.dataset.action === 'edit') openEditTaskForm(idx);
             if (btn.dataset.action === 'delete') confirmDeleteTask(idx);
             if (btn.dataset.action === 'done') quickCompleteTask(idx);
-            if (btn.dataset.action === 'photo') {
-                const inp = document.getElementById('task-row-photo-input');
-                inp.dataset.idx = idx;
-                inp.click();
-            }
+            if (btn.dataset.action === 'photo') openPhotoPicker_({ taskId: item._id, kind: 'task' });
         });
 
         // ✅ nhanh: Đã xong 100%, ngày thực hiện = hôm nay (nếu chưa ghi). Task có PHI nhắc kiểm tra ngày.
@@ -4412,9 +4604,8 @@
                 const db = TF.start ? parseVNDate(b[TF.start]) : null;
                 return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
             });
-            logBox.innerHTML = sorted.map((t, i) => {
+            logBox.innerHTML = sorted.map(t => {
                 const st = computeTaskStatus(t);
-                const gid = 'gal-log-' + i;
                 return `<div class="bg-slate-50 p-4 rounded-2xl space-y-1 text-xs">
                     <div class="flex items-center justify-between">
                         <p class="font-bold text-slate-700">${esc(t[TF.title])}</p>
@@ -4422,18 +4613,18 @@
                     </div>
                     <p class="text-slate-400">${esc(t[TF.stage] || '')}</p>
                     <p class="text-slate-400">${esc(t[TF.start] || '--')} → ${esc(t[TF.end] || '--')} · ${st.pct}%</p>
-                    ${buildPhotoGalleryHtml_(data, gid)}
+                    ${taskCardPhotosHtml_(t, 'task')}
                 </div>`;
             }).join('');
 
             // Cảnh báo sâu bệnh — chỉ những công việc có ghi cảnh báo
             const withPest = TF.pest ? mine.filter(t => (t[TF.pest] || '').trim()) : [];
             pestBox.innerHTML = withPest.length
-                ? withPest.map((t, i) => `<div class="bg-red-50 p-4 rounded-2xl space-y-1 text-xs">
+                ? withPest.map(t => `<div class="bg-red-50 p-4 rounded-2xl space-y-1 text-xs">
                     <p class="font-bold text-red-700">⚠️ ${esc(t[TF.pest])}</p>
                     <p class="text-slate-500">${esc(t[TF.title])} · ${esc(t[TF.start] || '--')} → ${esc(t[TF.end] || '--')}</p>
                     ${TF.note && t[TF.note] ? `<p class="text-slate-400 italic">${esc(t[TF.note])}</p>` : ''}
-                    ${buildPhotoGalleryHtml_(data, 'gal-pest-' + i)}
+                    ${taskCardPhotosHtml_(t, 'pest')}
                 </div>`).join('')
                 : '<p class="text-sm italic text-slate-400">Chưa có cảnh báo sâu bệnh nào cho hộ này.</p>';
         }
@@ -4476,12 +4667,30 @@
             img.style.opacity = '.2';
         }
 
-        // Dựng khối accordion "📷 Ảnh thực địa (n)" từ tối đa 4 cột Link_Anh_1..4 của 1 hộ — dùng
-        // chung cho các thẻ "Nhật ký công việc" và "Cảnh báo sâu bệnh" ở Hồ sơ chi tiết. galleryId
-        // phải DUY NHẤT trong trang vì có thể có nhiều accordion hiển thị cùng lúc.
+        // Dựng khối accordion "📷 Ảnh thực địa (n)". galleryId phải DUY NHẤT trong trang vì có thể có
+        // nhiều accordion hiển thị cùng lúc.
+        // 3.0.1: CHỈ dùng cho ảnh đại diện vườn ở tab Nông học. Thẻ công việc / sâu bệnh dùng
+        // taskCardPhotosHtml_() — đọc ảnh từ đúng dòng Field_Tasks.
         function buildPhotoGalleryHtml_(data, galleryId) {
             const F = CONFIG.FIELDS;
-            const links = (F.photoLinks || []).map(col => (data[col] || '').trim()).filter(Boolean);
+            return galleryFromLinks_((F.photoLinks || []).map(col => (data[col] || '').trim()).filter(Boolean), galleryId, '📷 Ảnh thực địa');
+        }
+        // Ảnh của 1 công việc trong thẻ ở Hồ sơ hộ: kind 'task' = ảnh xác nhận, 'pest' = ảnh sâu bệnh.
+        // Kèm nút "Thêm ảnh" (Cán bộ kỹ thuật trở lên) mở popup đã chọn sẵn đúng công việc + loại ảnh.
+        function taskCardPhotosHtml_(t, kind) {
+            const K = TASK_PHOTO_KIND_UI_[kind];
+            const links = taskPhotoLinks_(t, kind);
+            const gid = 'gal-' + kind + '-' + String(t._id || '').replace(/[^A-Za-z0-9_-]/g, '_');
+            const addBtn = t._id ? `<button type="button" data-pp-task="${esc(t._id)}" data-pp-kind="${kind}" class="need-eng text-[10px] font-black uppercase text-sky-700 hover:underline">+ Thêm ảnh</button>` : '';
+            if (!links.length) {
+                // Tài khoản Khách: máy chủ ẩn cột link ảnh -> rỗng không có nghĩa là "chưa có ảnh", nên không báo gì
+                if (!hasRole_('ENGINEER')) return '';
+                return `<div class="mt-2 pt-2 border-t border-slate-200/70 flex items-center justify-between text-[11px] text-slate-400">
+                    <span>${K.icon} Chưa có ${K.label.toLowerCase()}</span>${addBtn}</div>`;
+            }
+            return galleryFromLinks_(links, gid, K.icon + ' ' + K.label, addBtn);
+        }
+        function galleryFromLinks_(links, galleryId, label, extraHtml) {
             if (!links.length) return '';
             const thumbs = links.map(u => {
                 const direct = driveDirectImageUrl_(u);
@@ -4489,9 +4698,12 @@
                 return `<img src="${esc(direct)}" data-file-id="${esc(fileId)}" data-fallback-stage="0" class="photo-gallery-thumb" loading="lazy" onclick="openPhotoModal(this.src)" onerror="photoImgFallback_(this)">`;
             }).join('');
             return `<div class="mt-2 pt-2 border-t border-slate-200/70">
-                <div class="photo-gallery-toggle flex items-center justify-between text-[11px] font-bold text-emerald-700" onclick="toggleGallery('${galleryId}')">
-                    <span>📷 Ảnh thực địa (${links.length})</span>
-                    <span id="${galleryId}-icon">▾</span>
+                <div class="flex items-center justify-between gap-2">
+                    <div class="photo-gallery-toggle flex-1 flex items-center justify-between text-[11px] font-bold text-emerald-700" onclick="toggleGallery('${galleryId}')">
+                        <span>${label} (${links.length})</span>
+                        <span id="${galleryId}-icon">▾</span>
+                    </div>
+                    ${extraHtml || ''}
                 </div>
                 <div id="${galleryId}" class="photo-gallery-body mt-2">${thumbs}</div>
             </div>`;

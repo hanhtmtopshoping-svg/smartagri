@@ -863,8 +863,11 @@
                             <p class="text-[11px] font-black uppercase text-rose-800">🗺️ Điểm trong vùng đệm quanh vườn</p>
                             <select id="cd-filter" onchange="renderCdCells_()" class="px-3 py-1.5 rounded-full bg-white border border-rose-200 text-[11px] font-bold text-slate-700 outline-none">
                                 <option value="">Tất cả</option>
-                                <option value="do">🔴 Nguy cơ cao (≥0.5)</option>
+                                <option value="rat_cao">🚨 Rất cao – đã xác nhận (điều tra)</option>
+                                <option value="do">🔴 Nguy cơ cao (≥0.5 / Cao – cần lấy mẫu)</option>
                                 <option value="cam">🟠 Cảnh báo (≥0.4)</option>
+                                <option value="theo_doi">👁️ Theo dõi (điều tra Trung bình / Thấp)</option>
+                                <option value="chua">⚪ Chưa phân loại (điều tra)</option>
                                 <option value="xanh">🟢 An toàn (&lt;0.4)</option>
                             </select>
                             <span id="cd-cells-stats" class="text-[11px] text-slate-600"></span>
@@ -1635,7 +1638,7 @@
             FIELDS: {},
 
             // Phiên bản giao diện — so với "version" máy chủ trả về để cảnh báo khi link /exec còn chạy bản cũ.
-            APP_VERSION: "3.0.5"
+            APP_VERSION: "3.0.6"
         };
 
         // Tên cột thật trên tab "Data" sẽ được nạp vào đây sau khi gọi API lần đầu.
@@ -3890,7 +3893,9 @@
             const cd = cdRiskOf_(item);
             if (!cd) return base;
             const reasons = [cd.message].concat(base.reasons.filter(r => !/Không phát hiện rủi ro/.test(r)));
-            if (cd.level === 'do') return { level: 'do', label: 'Nguy cấp', reasons, row: base.row, cd };
+            if (cd.level === 'do' || cd.level === 'rat_cao') return { level: 'do', label: 'Nguy cấp', reasons, row: base.row, cd };
+            // 3.0.6: mức "theo dõi" (điều tra Trung bình/Thấp) chỉ thêm lý do, không nâng màu của hộ
+            if (cd.level === 'theo_doi') return Object.assign({}, base, { reasons, cd });
             if (base.level === 'do' || base.level === 'cam') return Object.assign({}, base, { reasons, cd });
             return { level: 'cam', label: 'Cảnh báo', reasons, row: base.row, cd };
         }
@@ -4749,11 +4754,14 @@
             if (!box) return;
             const cd = cdRiskOf_(data);
             if (!cd) { box.className = 'hidden'; box.innerHTML = ''; return; }
-            const red = cd.level === 'do';
-            box.className = 'rounded-2xl p-4 space-y-1 border ' + (red ? 'bg-red-50 border-red-300' : 'bg-orange-50 border-orange-300');
-            box.innerHTML = `<p class="text-xs font-black ${red ? 'text-red-700' : 'text-orange-700'}">${esc(cd.message)}</p>
-                <p class="text-[11px] text-slate-700">🧪 ${esc(cdRisk.measure)}</p>
-                <p class="text-[10px] text-slate-500">${cd.grid ? 'Dữ liệu lưới Dryad là XÁC SUẤT vượt ngưỡng ở ô ~10 km (mô hình), không phải kết quả đo tại vườn — cần lấy mẫu đất để khẳng định.' : 'Ngưỡng ' + cdNum_(cdRisk.threshold) + ' mg/kg: ' + esc(cdRisk.thresholdNote)}</p>`;
+            const red = cd.level === 'do' || cd.level === 'rat_cao', watch = cd.level === 'theo_doi';
+            box.className = 'rounded-2xl p-4 space-y-1 border ' + (red ? 'bg-red-50 border-red-300' : watch ? 'bg-yellow-50 border-yellow-300' : 'bg-orange-50 border-orange-300');
+            const sv = cdRisk.survey || {};
+            box.innerHTML = `<p class="text-xs font-black ${red ? 'text-red-700' : watch ? 'text-yellow-800' : 'text-orange-700'}">${esc(cd.message)}</p>
+                <p class="text-[11px] text-slate-700">🧪 ${esc(cd.measure || cdRisk.measure)}</p>
+                <p class="text-[10px] text-slate-500">${cd.survey ? 'Điều tra Cd địa phương (' + esc(cd.source || '') + '), vùng phát hiện ' + cdNum_(sv.radiusKm || 20, 0) + ' km quanh điểm.' +
+                    (cd.dryadProb !== null && cd.dryadProb !== undefined ? ' Ô lưới Dryad toàn cầu chứa vườn chỉ có xác suất vượt ngưỡng ' + Math.round(cd.dryadProb * 100) + '% (mô hình ô ~10 km, dưới mức cảnh báo) — đây là điểm mù của Dryad, dữ liệu điều tra thực địa được ưu tiên.' : '')
+                    : cd.grid ? 'Dữ liệu lưới Dryad là XÁC SUẤT vượt ngưỡng ở ô ~10 km (mô hình), không phải kết quả đo tại vườn — cần lấy mẫu đất để khẳng định.' : 'Ngưỡng ' + cdNum_(cdRisk.threshold) + ' mg/kg: ' + esc(cdRisk.thresholdNote)}</p>`;
         }
         function cdNum_(n, d) { return Number(n).toLocaleString('vi-VN', { maximumFractionDigits: d === undefined ? 2 : d }); }
         let currentProfileHousehold = null;
@@ -4984,19 +4992,22 @@
                 return;
             }
             const byPuc = cdRisk.byPuc || {};
-            const pucs = Object.keys(byPuc).sort((a, b) => (byPuc[a].level === 'do' ? 0 : 1) - (byPuc[b].level === 'do' ? 0 : 1) || byPuc[a].km - byPuc[b].km);
+            const pucs = Object.keys(byPuc).sort((a, b) => (CD_RANK_[byPuc[b].level] || 0) - (CD_RANK_[byPuc[a].level] || 0) || byPuc[a].km - byPuc[b].km);
             const hh = Object.values(cdRisk.byFarmer || {});
             sum.innerHTML = `Ngưỡng <b>${cdNum_(cdRisk.threshold)} mg/kg</b> (phòng ngừa HTX) · ${cdRisk.hotspotCount} điểm (${cdRisk.gridCount} ô lưới Dryad) · ` +
                 `đối chiếu ${cdRisk.checkedHouseholds} hộ có toạ độ${cdRisk.noCoords ? ' (' + cdRisk.noCoords + ' hộ thiếu toạ độ)' : ''} · ` +
-                `<b class="text-red-700">🔴 ${hh.filter(x => x.level === 'do').length}</b> · <b class="text-orange-700">🟠 ${hh.filter(x => x.level === 'cam').length}</b> hộ` +
+                (hh.some(x => x.level === 'rat_cao') ? `<b style="color:#7f1d1d">🚨 ${hh.filter(x => x.level === 'rat_cao').length}</b> · ` : '') +
+                `<b class="text-red-700">🔴 ${hh.filter(x => x.level === 'do').length}</b> · <b class="text-orange-700">🟠 ${hh.filter(x => x.level === 'cam').length}</b>` +
+                (hh.some(x => x.level === 'theo_doi') ? ` · <b class="text-yellow-700">👁️ ${hh.filter(x => x.level === 'theo_doi').length}</b>` : '') + ` hộ` +
+                (cdRisk.survey && cdRisk.survey.count ? ` · ${cdRisk.survey.count} điểm điều tra địa phương (vùng ${cdNum_(cdRisk.survey.radiusKm, 0)} km)` : '') +
                 (cdRisk.dryadImport ? ` · lưới Dryad VN nạp lúc ${esc(cdRisk.dryadImport.at)}: ${cdRisk.dryadImport.selected}/${cdRisk.dryadImport.vnCells} ô (≤ ${cdRisk.dryadImport.nearKm} km quanh ${cdRisk.dryadImport.orchardPoints} vườn)` : '');
             sum.title = cdRisk.thresholdNote + ' Điểm đo: bán kính ' + cdRisk.pointRadiusKm + ' km; ô lưới Dryad: ô chứa vườn (≤ ' + cdRisk.gridRadiusKm + ' km), xác suất ≥ ' + Math.round(cdRisk.probHigh * 100) + '% đỏ, ≥ ' + Math.round(cdRisk.probMed * 100) + '% cam.';
             document.getElementById('cd-sync-btn').disabled = !pucs.length;
             list.innerHTML = pucs.length ? pucs.map(p => {
                 const x = byPuc[p];
                 return `<div class="flex items-start gap-2 text-[11px] bg-white/80 rounded-xl px-3 py-2">
-                    <span class="shrink-0 font-black ${x.level === 'do' ? 'text-red-700' : 'text-orange-700'}">${x.level === 'do' ? '🔴' : '🟠'} ${esc(p)}</span>
-                    <span class="flex-1">${esc(x.message)} <span class="text-slate-400">· ${x.households} hộ</span></span>
+                    <span class="shrink-0 font-black" style="color:${CD_LEVEL_STYLE_[x.level] ? CD_LEVEL_STYLE_[x.level].color : '#c2410c'}">${CD_LEVEL_STYLE_[x.level] ? CD_LEVEL_STYLE_[x.level].dot : '🟠'} ${esc(p)}</span>
+                    <span class="flex-1">${esc(x.message)} <span class="text-slate-400">· ${x.households} hộ</span>${x.measure && x.measure !== cdRisk.measure ? `<br><span class="text-slate-600">🧪 ${esc(x.measure)}</span>` : ''}</span>
                 </div>`;
             }).join('') + `<p class="text-[11px] text-slate-600 px-1">🧪 Biện pháp: ${esc(cdRisk.measure)}</p>`
                 : '<p class="text-[11px] text-emerald-700 px-1">🟢 Không có vườn nào nằm trong vùng nguy cơ Cd theo dữ liệu hiện có.</p>';
@@ -5009,9 +5020,16 @@
             if (lat === null || lng === null) return null;
             let prob = cdNumCell_(row.Cd_Exceed_Prob); if (prob !== null && prob > 1) prob /= 100;
             const ppm = cdNumCell_(row.Cd_Concentration_ppm);
-            const grid = /luoi|dryad|grid/.test(normalizeSearch(row.Loai_Du_Lieu || '')) || (ppm === null && prob !== null);
+            const survey = /dieu tra/.test(normalizeSearch(row.Loai_Du_Lieu || ''));
+            const grid = !survey && (/luoi|dryad|grid/.test(normalizeSearch(row.Loai_Du_Lieu || '')) || (ppm === null && prob !== null));
             const R = cdRisk || { threshold: 0.5, probHigh: 0.5, probMed: 0.4 };
             let level = 'xanh';
+            if (survey) {
+                // 3.0.6: cùng quy tắc với Cadimi.gs (cdHotspotLevel_)
+                const t = normalizeSearch(row.Threat_Level || '').trim();
+                level = /^rat cao/.test(t) ? 'rat_cao' : /^cao/.test(t) ? 'do' : /^(trung binh|thap)/.test(t) ? 'theo_doi' : (ppm !== null && ppm > R.threshold ? 'do' : 'chua');
+                return { id: row.ID, lat, lng, prob, ppm, grid: false, survey: true, level, tinh: row.Tinh || '', huyen: row.Huyen || '', threat: row.Threat_Level || '', source: row.Source_Ref || '', note: row.Ghi_Chu || '' };
+            }
             if (!grid && ppm !== null) level = ppm > R.threshold ? 'do' : 'xanh';
             else if (prob !== null) level = prob >= R.probHigh ? 'do' : prob >= R.probMed ? 'cam' : 'xanh';
             else { const t = normalizeSearch(row.Threat_Level || ''); level = /cao|nguy|high/.test(t) ? 'do' : /trung|medium/.test(t) ? 'cam' : 'xanh'; }
@@ -5039,30 +5057,37 @@
             }
             return best;
         }
-        const CD_LEVEL_STYLE_ = { do: { dot: '🔴', color: '#dc2626', label: 'Nguy cơ cao' }, cam: { dot: '🟠', color: '#f97316', label: 'Cảnh báo' }, xanh: { dot: '🟢', color: '#16a34a', label: 'An toàn' } };
+        const CD_LEVEL_STYLE_ = {
+            rat_cao: { dot: '🚨', color: '#7f1d1d', label: 'Rất cao – đã xác nhận' },
+            do: { dot: '🔴', color: '#dc2626', label: 'Nguy cơ cao' }, cam: { dot: '🟠', color: '#f97316', label: 'Cảnh báo' },
+            theo_doi: { dot: '👁️', color: '#ca8a04', label: 'Theo dõi' }, chua: { dot: '⚪', color: '#94a3b8', label: 'Chưa phân loại' },
+            xanh: { dot: '🟢', color: '#16a34a', label: 'An toàn' }
+        };
+        const CD_RANK_ = { rat_cao: 4, do: 3, cam: 2, theo_doi: 1 };
         function cdCellsAll_() { return cadmiumRows.map(cdCellInfo_).filter(Boolean); }
 
         function renderCdCells_() {
             const box = document.getElementById('cd-cells'), stats = document.getElementById('cd-cells-stats');
             if (!box || !stats) return;
             const all = cdCellsAll_();
-            const cnt = { do: 0, cam: 0, xanh: 0 };
+            const cnt = { rat_cao: 0, do: 0, cam: 0, theo_doi: 0, chua: 0, xanh: 0 };
             all.forEach(c => cnt[c.level]++);
-            const grids = all.filter(c => c.grid);
+            const grids = all.filter(c => c.grid), surveys = all.filter(c => c.survey);
             const probs = grids.map(c => c.prob).filter(v => v !== null);
-            stats.innerHTML = `${all.length} điểm (${grids.length} ô lưới Dryad, ${all.length - grids.length} điểm đo) · 🔴 ${cnt.do} · 🟠 ${cnt.cam} · 🟢 ${cnt.xanh}` +
+            stats.innerHTML = `${all.length} điểm (${grids.length} ô lưới Dryad, ${surveys.length} điểm điều tra, ${all.length - grids.length - surveys.length} điểm đo) · ` +
+                (cnt.rat_cao ? `🚨 ${cnt.rat_cao} · ` : '') + `🔴 ${cnt.do} · 🟠 ${cnt.cam} · ` + (cnt.theo_doi ? `👁️ ${cnt.theo_doi} · ` : '') + (cnt.chua ? `⚪ ${cnt.chua} · ` : '') + `🟢 ${cnt.xanh}` +
                 (probs.length ? ` · xác suất ô lưới ${cdNum_(Math.min(...probs), 2)}–${cdNum_(Math.max(...probs), 2)}` : '');
             const f = document.getElementById('cd-filter').value;
-            const list = all.filter(c => !f || c.level === f).sort((a, b) => (b.prob ?? b.ppm ?? 0) - (a.prob ?? a.ppm ?? 0));
+            const list = all.filter(c => !f || c.level === f).sort((a, b) => (CD_RANK_[b.level] || 0) - (CD_RANK_[a.level] || 0) || (b.prob ?? b.ppm ?? 0) - (a.prob ?? a.ppm ?? 0));
             const MAX = 300;
             box.innerHTML = list.length ? `<table class="w-full text-[11px]"><thead><tr class="text-[9px] uppercase text-slate-400 text-left"><th class="py-1 px-2">Mức</th><th class="px-2">Tỉnh</th><th class="px-2">Toạ độ</th><th class="px-2">Giá trị</th><th class="px-2">Vườn gần nhất</th><th></th></tr></thead><tbody>` +
                 list.slice(0, MAX).map(c => {
                     const st = CD_LEVEL_STYLE_[c.level], near = cdNearestOrchard_(c);
                     return `<tr class="border-t border-rose-100 hover:bg-white/80">
                         <td class="py-1 px-2 whitespace-nowrap font-bold" style="color:${st.color}">${st.dot} ${st.label}</td>
-                        <td class="px-2">${esc(c.tinh)}</td>
+                        <td class="px-2">${esc(c.tinh)}${c.huyen ? ' · ' + esc(c.huyen) : ''}</td>
                         <td class="px-2 font-mono text-[10px]">${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}</td>
-                        <td class="px-2 whitespace-nowrap">${c.grid ? 'xác suất ' + Math.round(c.prob * 100) + '%' : (c.ppm !== null ? cdNum_(c.ppm, 3) + ' mg/kg (đo)' : '--')}</td>
+                        <td class="px-2 whitespace-nowrap">${c.survey ? 'điều tra: ' + esc(c.threat) + (c.ppm !== null ? ' · ' + cdNum_(c.ppm, 3) + ' mg/kg' : '') : c.grid ? 'xác suất ' + Math.round(c.prob * 100) + '%' : (c.ppm !== null ? cdNum_(c.ppm, 3) + ' mg/kg (đo)' : '--')}</td>
                         <td class="px-2 whitespace-nowrap">${near ? esc(near.puc) + ' · ' + cdNum_(near.km, 1) + ' km' : '<span class="text-slate-400">ngoài 30 km</span>'}</td>
                         <td class="px-2"><button onclick="focusCdCell_(${c.lat},${c.lng})" class="text-rose-700 hover:underline font-bold" title="Xem trên bản đồ">📍</button></td>
                     </tr>`;
@@ -5082,8 +5107,21 @@
         const cdCanvas_ = L.canvas({ pane: 'cdPane', padding: 0.3 }); // 2.2.9: vẽ hàng trăm ô bằng 1 canvas thay vì hàng trăm phần tử SVG
         function renderCdLayer_() {
             cdLayer.clearLayers();
+            const surveyKm = cdRisk && cdRisk.survey ? cdRisk.survey.radiusKm : 20;
             cdCellsAll_().forEach(c => {
                 const st = CD_LEVEL_STYLE_[c.level];
+                if (c.survey) {
+                    // 3.0.6: điểm điều tra địa phương — vòng tròn vùng phát hiện + điểm to viền đứt
+                    if (c.level !== 'chua') cdLayer.addLayer(L.circle([c.lat, c.lng], { pane: 'cdPane', renderer: cdCanvas_, radius: surveyKm * 1000, color: st.color, weight: 1.5, dashArray: '6 6', fillColor: st.color, fillOpacity: c.level === 'rat_cao' ? 0.12 : 0.07, interactive: false }));
+                    const sm = L.circleMarker([c.lat, c.lng], { pane: 'cdPane', renderer: cdCanvas_, radius: 11, color: '#111827', weight: 3, dashArray: '3 3', fillColor: st.color, fillOpacity: 0.95 });
+                    sm.bindPopup(() => { const near = cdNearestOrchard_(c); return `<div style="font-size:12px;line-height:1.45"><b style="color:${st.color}">${st.dot} ${esc(c.threat || st.label)}</b><br>` +
+                        `Điều tra Cd địa phương: <b>${esc(c.huyen)}, ${esc(c.tinh)}</b>` + (c.ppm !== null ? `<br>Cd ghi nhận: ${cdNum_(c.ppm, 3)} mg/kg` : '') +
+                        `<br>Nguồn: ${esc(c.source || '--')}` + (c.level !== 'chua' ? `<br>Vùng phát hiện: ${cdNum_(surveyKm, 0)} km quanh điểm` : '<br><i>Chưa phân loại — không phát cảnh báo</i>') +
+                        (near ? `<br>Vườn HTX gần nhất: ${esc(near.puc)} (${cdNum_(near.km, 1)} km)` : '<br>Không có vườn HTX trong ~30 km') +
+                        (/xác minh/.test(c.note) ? `<br><span style="color:#b45309">⚠ ${esc(c.note.split(' · ').filter(x => /xác minh/.test(x)).join(' '))}</span>` : '') + '</div>'; });
+                    cdLayer.addLayer(sm);
+                    return;
+                }
                 const m = c.grid
                     ? L.circleMarker([c.lat, c.lng], { pane: 'cdPane', renderer: cdCanvas_, radius: 7, color: '#fff', weight: 1.5, fillColor: st.color, fillOpacity: c.level === 'xanh' ? 0.55 : 0.85 })
                     : L.circleMarker([c.lat, c.lng], { pane: 'cdPane', renderer: cdCanvas_, radius: 8, color: '#111827', weight: 2.5, fillColor: st.color, fillOpacity: 0.9 });
@@ -5103,8 +5141,9 @@
             onAdd: function () {
                 const d = L.DomUtil.create('div', 'leaflet-bar');
                 d.style.cssText = 'background:rgba(255,255,255,.92);backdrop-filter:blur(8px);padding:7px 10px;border-radius:14px;font:700 11px Inter,sans-serif;color:#334155;margin-top:150px';
-                d.innerHTML = '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cd-layer-toggle"> ☢️ Lưới Cadimi Dryad</label>' +
-                    '<div style="display:flex;gap:8px;margin-top:4px;font-weight:600;font-size:10px"><span>🔴 ≥0.5</span><span>🟠 ≥0.4</span><span>🟢 &lt;0.4</span><span title="Viền đen = điểm đo thực tế">⚫ đo</span></div>';
+                d.innerHTML = '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="cd-layer-toggle"> ☢️ Cadimi: Dryad + điều tra</label>' +
+                    '<div style="display:flex;gap:8px;margin-top:4px;font-weight:600;font-size:10px"><span>🔴 ≥0.5</span><span>🟠 ≥0.4</span><span>🟢 &lt;0.4</span><span title="Viền đen = điểm đo thực tế">⚫ đo</span></div>' +
+                    '<div style="display:flex;gap:8px;margin-top:2px;font-weight:600;font-size:10px" title="Điểm điều tra Cd địa phương (viền đứt) + vòng vùng phát hiện"><span>🚨 rất cao</span><span>🔴 cao</span><span>👁️ theo dõi</span><span>⚪ chưa PL</span></div>';
                 L.DomEvent.disableClickPropagation(d);
                 d.querySelector('input').addEventListener('change', ev => setCdLayerVisible_(ev.target.checked));
                 return d;
@@ -6742,18 +6781,49 @@ Tiếp tục?`;
             if (!cdRisk || !isHeavyMetalQuestion_(questionText)) return undefined;
             const F = CONFIG.FIELDS;
             const visible = new Set(getFilteredIndices().map(x => String(x.item[F.id] || '').trim()));
+            const MUC = { rat_cao: 'rất cao – vùng nhiễm đã xác nhận', do: 'nguy cấp', cam: 'cảnh báo', theo_doi: 'theo dõi' };
             const ho = Object.keys(cdRisk.byFarmer).filter(id => visible.has(id)).slice(0, 60).map(id => {
                 const x = cdRisk.byFarmer[id];
-                return { id_ho: id, ma_vung_trong: x.puc, muc: x.level === 'do' ? 'nguy cấp' : 'cảnh báo', cach_diem_km: x.km,
-                    loai_du_lieu: x.grid ? 'lưới Dryad 2025 (xác suất vượt ngưỡng, ô ~10 km)' : 'điểm đo thực tế',
-                    nong_do_cd_mg_kg: x.ppm, xac_suat_vuot_nguong: x.prob, nguon: x.source, canh_bao: x.message };
+                return { id_ho: id, ma_vung_trong: x.puc, muc: MUC[x.level] || x.level, cach_diem_km: x.km,
+                    loai_du_lieu: x.survey ? 'điều tra Cd địa phương' : x.grid ? 'lưới Dryad 2025 (xác suất vượt ngưỡng, ô ~10 km)' : 'điểm đo thực tế',
+                    nong_do_cd_mg_kg: x.ppm, xac_suat_vuot_nguong: x.prob, xac_suat_o_dryad_chua_vuon: x.dryadProb, nguon: x.source,
+                    canh_bao: x.message, bien_phap: x.measure };
             });
             return {
                 nguong_cd_mg_kg: cdRisk.threshold, ghi_chu_nguong: cdRisk.thresholdNote,
                 quy_tac: 'Điểm đo thực tế: bán kính ' + cdRisk.pointRadiusKm + ' km và Cd > ngưỡng. Lưới Dryad (Hou et al. 2025, Science): ô chứa vườn, xác suất ≥ ' + Math.round(cdRisk.probHigh * 100) + '% = nguy cấp, ≥ ' + Math.round(cdRisk.probMed * 100) + '% = cảnh báo.',
                 so_diem_tab_cadmium_hotspots: cdRisk.hotspotCount, so_o_luoi_dryad: cdRisk.gridCount,
                 so_ho_da_doi_chieu: cdRisk.checkedHouseholds, so_ho_thieu_toa_do: cdRisk.noCoords,
-                bien_phap_khuyen_nghi: cdRisk.measure, ho_trong_vung_nguy_co: ho
+                bien_phap_khuyen_nghi: cdRisk.measure, ho_trong_vung_nguy_co: ho,
+                dieu_tra_dia_phuong: buildCdSurveyContext_(questionText)
+            };
+        }
+        // 3.0.6: điều tra Cd địa phương (ĐBSCL) + thống kê Dryad cùng tỉnh -> AI giải thích điểm mù của Dryad
+        function buildCdSurveyContext_(questionText) {
+            const sv = cdRisk && cdRisk.survey;
+            if (!sv || !sv.count) return undefined;
+            const q = ' ' + normalizeSearch(questionText || '') + ' ';
+            const named = sv.points.filter(p => [p.tinh, p.huyen].some(n => n && q.includes(' ' + normalizeSearch(n).replace(/^trung tam /, '') + ' ')));
+            const MUC = { rat_cao: 'Rất cao – đã xác nhận', do: 'Cao – cần lấy mẫu', theo_doi: 'Theo dõi (Trung bình/Thấp)', '': 'Chưa phân loại' };
+            const pts = (named.length ? named : sv.points).map(p => {
+                const near = cdNearestOrchard_(p);
+                return { tinh: p.tinh, huyen_xa: p.huyen, muc_dieu_tra: p.threat, muc_he_thong: MUC[p.level] || p.level, nguon: p.source || '(chưa có nguồn)',
+                    cd_mg_kg: p.ppm, toa_do: [p.lat, p.lng],
+                    o_dryad_gan_nhat: p.dryadNearest ? { cach_km: p.dryadNearest.km, xac_suat_vuot_nguong: p.dryadNearest.prob } : null,
+                    vuon_htx_gan_nhat: near ? { ma_vung: near.puc, cach_km: Math.round(near.km * 10) / 10 } : 'không có vườn HTX trong ~30 km' };
+            });
+            const dryad = {};
+            Object.entries(sv.dryadByTinh || {}).forEach(([t, v]) => { if (!named.length || named.some(p => p.tinh === t)) dryad[t] = { so_o_luoi: v.cells, xac_suat_cao_nhat: v.max, trung_vi: v.median }; });
+            return {
+                nguon_du_lieu: sv.source, ban_kinh_phat_hien_km: sv.radiusKm,
+                quy_tac: 'Vườn trong ' + sv.radiusKm + ' km quanh điểm điều tra nhận mức CAO HƠN giữa Dryad toàn cầu và điều tra thực địa. "Chưa phân loại" = chưa có kết luận, không phát cảnh báo.',
+                diem_dieu_tra: pts,
+                thong_ke_dryad_cung_tinh: dryad,
+                nguong_canh_bao_dryad: { cam: cdRisk.probMed, do: cdRisk.probHigh },
+                vi_sao_dryad_khong_bao_cao: 'Dryad (Hou et al. 2025, Science) là XÁC SUẤT vượt ngưỡng do mô hình học máy toàn cầu dự báo trên ô lưới ~10 km, không phải số đo. ' +
+                    'Mô hình làm trơn theo ô nên điểm nóng cục bộ (ven kênh rạch nhận nước thải, gần khu công nghiệp, đất phèn pH thấp, nơi bón nhiều phân lân chứa Cd) bị pha loãng; ' +
+                    'mẫu đất ĐBSCL trong dữ liệu huấn luyện toàn cầu thưa. Vì vậy mọi ô ở các tỉnh này đều dưới ngưỡng cảnh báo ' + cdRisk.probMed + ', kể cả nơi địa phương đã xác nhận nhiễm.',
+                khuyen_cao_theo_muc: { 'Rất cao – đã xác nhận': sv.levels.rat_cao, 'Cao – cần lấy mẫu': sv.levels.do, 'Trung bình / Thấp': sv.levels.theo_doi }
             };
         }
 
@@ -6824,6 +6894,10 @@ Tiếp tục?`;
                 '"điểm đo thực tế" (nồng độ mg/kg) với "lưới Dryad 2025" (XÁC SUẤT vượt ngưỡng do mô hình dự báo ở ô ~10 km, KHÔNG phải kết quả đo tại vườn) — ' +
                 'không được nói vườn "đã nhiễm" khi chỉ có dữ liệu lưới; khuyên lấy mẫu đất phân tích AAS để khẳng định. Ngưỡng ' +
                 'trong dữ liệu là ngưỡng phòng ngừa nội bộ của HTX; khi nhắc quy chuẩn, nói rõ QCVN 03:2023/BTNMT hiện hành và khuyên kiểm tra văn bản gốc. ' +
+                'Nếu có nguy_co_cadimi.dieu_tra_dia_phuong (Tiền Giang, Long An, các tỉnh ĐBSCL): giải thích vì sao Dryad toàn cầu không hiện rủi ro cao bằng chính số liệu ' +
+                'thong_ke_dryad_cung_tinh và o_dryad_gan_nhat (xác suất dưới ngưỡng cảnh báo) cùng lý do trong vi_sao_dryad_khong_bao_cao; nói rõ dữ liệu điều tra thực địa được ' +
+                'ưu tiên; nêu mức và nguồn của từng điểm, khoảng cách tới vườn HTX gần nhất (vuon_htx_gan_nhat) và khuyến cáo đúng theo khuyen_cao_theo_muc. ' +
+                'Điểm "Chưa phân loại" là chưa có kết luận — không được nói là an toàn; nếu có số đo (cd_mg_kg) thì nêu kèm nguồn. ' +
                 'Vườn đồng bằng thấp (< 10 m, ĐBSCL) mới là nơi lo ngập úng nội đồng, triều cường, xâm nhập mặn. Ví dụ cách nói: "Tuy lượng mưa lớn X mm, ' +
                 'nhưng do vườn thuộc vùng đồi dốc Tây Nguyên/đất Bazan thoát nước tốt nên nguy cơ ngập úng thấp, cần chú ý chống xói mòn và rửa trôi dinh dưỡng...".';
             const parts = [];
@@ -8240,9 +8314,28 @@ Tiếp tục?`;
             const table = cells.size ? `<div class="dash-scroll" style="max-height:30rem"><table class="dash-table dash-heat"><thead><tr><th>Tỉnh / Xã / Mã PUC</th><th>Mức cao nhất</th>` +
                 types.map(p => `<th class="num" style="text-align:center">${esc(p[1])}</th>`).join('') + `</tr></thead><tbody>${body}</tbody></table></div>` + legend
                 : '<div class="dash-empty mt-4">✅ Không có cảnh báo sâu bệnh đang hoạt động.</div>';
+            const cdBox = dashCdSurveyBox_();
             return dashSection_(4, 'Bản đồ nhiệt rủi ro &amp; sâu bệnh',
                 'Đang hoạt động = đánh giá Risk_Assessment mới nhất của mỗi vùng (cột Dịch bệnh khác "Không") + cảnh báo sâu bệnh trên task chưa xong hoặc xong trong ' + DASH_ACTIVE_DAYS_ + ' ngày qua. Di chuột / chạm ô để xem chi tiết.',
-                kpis + chips + table);
+                kpis + chips + table + cdBox);
+        }
+        // 3.0.6: điểm nóng Cadimi theo điều tra địa phương (ĐBSCL) trong bản đồ nhiệt rủi ro
+        function dashCdSurveyBox_() {
+            const sv = cdRisk && cdRisk.survey;
+            if (!sv || !sv.count) return '';
+            const byLv = {};
+            sv.points.forEach(p => { const lv = p.level || 'chua'; (byLv[lv] = byLv[lv] || []).push(p); });
+            const rows = ['rat_cao', 'do', 'theo_doi', 'chua'].filter(lv => byLv[lv]).map(lv => {
+                const st = CD_LEVEL_STYLE_[lv], list = byLv[lv];
+                const near = list.map(p => cdNearestOrchard_(p)).filter(Boolean).sort((a, b) => a.km - b.km)[0];
+                const tinh = [...new Set(list.map(p => p.tinh))];
+                return `<tr><td class="font-bold whitespace-nowrap" style="color:${st.color}">${st.dot} ${st.label}</td><td>${esc(tinh.join(', '))}<div class="text-[10px] text-slate-400">${esc(list.map(p => p.huyen).join(', '))}</div></td>` +
+                    `<td class="c">${list.length}</td><td class="c">${hhIn_(lv)}</td><td>${near ? esc(near.puc) + ' · ' + cdNum_(near.km, 1) + ' km' : '<span class="text-slate-400">> 30 km</span>'}</td></tr>`;
+            }).join('');
+            function hhIn_(lv) { return Object.values(cdRisk.byFarmer || {}).filter(x => x.survey && x.level === lv).length || '·'; }
+            return `<div class="mt-5"><p class="text-[11px] font-black uppercase text-rose-800 mb-2">☢️ Điểm nóng Cadimi — điều tra địa phương (vùng phát hiện ${cdNum_(sv.radiusKm, 0)} km)</p>` +
+                `<div class="dash-scroll"><table class="dash-table dash-heat"><thead><tr><th>Mức</th><th>Tỉnh / huyện</th><th class="num" style="text-align:center">Điểm</th><th class="num" style="text-align:center">Hộ trong vùng</th><th>Vườn HTX gần nhất</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+                `<p class="text-[10px] text-slate-500 mt-1">Nguồn: ${esc(sv.source)}. Lưới Dryad toàn cầu không thấy các điểm này (xác suất ô ĐBSCL &lt; ${cdRisk.probMed}); bật lớp ☢️ trên bản đồ để xem vòng phát hiện.</p></div>`;
         }
 
         function openOverlay(id) {

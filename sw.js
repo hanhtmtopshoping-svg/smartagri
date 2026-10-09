@@ -4,7 +4,7 @@
  * - KHONG BAO GIO luu du lieu Apps Script (script.google.com / googleusercontent) — du lieu ca nhan
  *   va token phien khong nam trong bo nho dem cua may.
  */
-const BUILD = "3.0.5-7a8f84fa";
+const BUILD = "3.0.6-af463359";
 const SHELL_CACHE = 'smartagri-shell-' + BUILD;
 const CDN_CACHE = 'smartagri-cdn-v1';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
